@@ -67,7 +67,7 @@ const PAYMENT_METHODS = [
   { value: 'credit_card', label: 'Credit Card' },
   { value: 'net_banking', label: 'Net Banking' },
   { value: 'wallet', label: 'Wallet' },
-  { value: 'bank_transfer', label: 'Bank Transfer' }
+  { value: 'other', label: 'Other' }
 ];
 
 const Dashboard = () => {

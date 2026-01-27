@@ -381,7 +381,7 @@ exports.recordMonthlyIncome = async (req, res) => {
       category: category,
       description: `Monthly income from ${profile.incomeSource || 'Allowance'}`,
       date: new Date(),
-      paymentMethod: 'bank_transfer'
+      paymentMethod: 'net_banking'
     });
 
     await transaction.save();
