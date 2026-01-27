@@ -1,10 +1,20 @@
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, LogOut, User, Settings } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 export function Topbar({ onMenuClick }) {
-  const { user, student } = useUser();
+  const { user, student, logout } = useUser();
+  const navigate = useNavigate();
 
   console.log("Topbar: Rendering, user:", user?.email);
 
@@ -40,23 +50,41 @@ export function Topbar({ onMenuClick }) {
         </Button>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:block text-right">
-            <p className="text-sm font-medium text-foreground">{displayName}</p>
-            <p className="text-xs text-muted-foreground">Student</p>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-            {profilePhoto ? (
-              <img 
-                src={profilePhoto} 
-                alt={displayName} 
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-primary-foreground font-medium">
-                {displayName.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-3 h-auto p-0 hover:bg-transparent">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-foreground">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">Student</p>
+                </div>
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                  {profilePhoto ? (
+                    <img 
+                      src={profilePhoto} 
+                      alt={displayName} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-primary-foreground font-medium">
+                      {displayName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

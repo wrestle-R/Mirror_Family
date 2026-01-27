@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/Dashboard/Layout";
 import { useUser } from "@/context/UserContext";
 import { 
@@ -5,47 +6,71 @@ import {
   PiggyBank, 
   CreditCard, 
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Dashboard = () => {
   const { user, student } = useUser();
-
-  console.log("Dashboard: Rendering, user:", user?.email, "student:", student?.name);
+  const navigate = useNavigate();
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const displayName = student?.name || user?.displayName || user?.email?.split("@")[0] || "User";
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+        if (user?.uid) {
+            try {
+                const response = await axios.get(`${API_URL}/api/student/profile/${user.uid}`);
+                if (response.data.success) {
+                    setProfileData(response.data.data.profile);
+                }
+            } catch (error) {
+                console.error("Error fetching profile stats:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+    fetchProfile();
+  }, [user]);
 
   const stats = [
     {
       title: "Monthly Budget",
-      value: "₹0",
-      change: "Set up your budget",
+      value: loading ? "..." : `₹${profileData?.monthlyBudget || 0}`,
+      change: profileData?.monthlyBudget ? "Budget active" : "Set up your budget",
       trend: "neutral",
       icon: Wallet,
       color: "text-chart-1"
     },
     {
-      title: "Savings Goal",
-      value: "₹0",
-      change: "Create a savings goal",
+      title: "Short Term Goal",
+      value: loading ? "..." : (profileData?.shortTermGoals ? "Active" : "None"),
+      change: profileData?.shortTermGoals || "Create a goal",
       trend: "neutral",
       icon: PiggyBank,
       color: "text-chart-2"
     },
     {
-      title: "Total Debt",
-      value: "₹0",
-      change: "Track your debt",
+      title: "Financial Condition",
+      value: loading ? "..." : (profileData?.financialCondition || "Unknown"),
+      change: "Current Status",
       trend: "neutral",
       icon: CreditCard,
       color: "text-chart-4"
     },
     {
-      title: "Investments",
-      value: "₹0",
-      change: "Start investing",
+      title: "Long Term Goal",
+      value: loading ? "..." : (profileData?.longTermGoals ? "Active" : "None"),
+      change: profileData?.longTermGoals || "Plan for future",
       trend: "neutral",
       icon: TrendingUp,
       color: "text-chart-3"
@@ -54,113 +79,64 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Welcome back, {displayName}! 👋
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Here's an overview of your financial health
-          </p>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <div>
+             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+             <p className="text-muted-foreground">Welcome back, {displayName}!</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            {!profileData?.monthlyBudget && !loading && (
+                <Button onClick={() => navigate("/profile")}>Complete Profile</Button>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
+            <Card key={index}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium">
                   {stat.title}
                 </CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  {stat.trend === "up" && <ArrowUpRight className="w-3 h-3 text-chart-2" />}
-                  {stat.trend === "down" && <ArrowDownRight className="w-3 h-3 text-destructive" />}
-                  {stat.change}
+                {loading ? (
+                    <Skeleton className="h-7 w-20 mb-1" />
+                ) : (
+                    <div className="text-2xl font-bold truncate">{stat.value}</div>
+                )}
+                <p className="text-xs text-muted-foreground truncate h-4" title={typeof stat.change === 'string' ? stat.change : ''}>
+                  {loading ? <Skeleton className="h-3 w-32" /> : stat.change}
                 </p>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Getting Started</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-4 p-4 rounded-lg bg-secondary/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold">1</span>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Complete your profile</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Add your income, expenses, and financial goals
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 p-4 rounded-lg bg-secondary/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold">2</span>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Set your budget</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Create spending categories and limits
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 p-4 rounded-lg bg-secondary/50">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary font-bold">3</span>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Get AI recommendations</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Receive personalized financial advice
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Your AI Council</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                <div className="w-10 h-10 rounded-full bg-chart-1/10 flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-chart-1" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Budget Agent</h4>
-                  <p className="text-xs text-muted-foreground">Ready to analyze spending</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                <div className="w-10 h-10 rounded-full bg-chart-2/10 flex items-center justify-center">
-                  <PiggyBank className="w-5 h-5 text-chart-2" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Savings Agent</h4>
-                  <p className="text-xs text-muted-foreground">Ready to create savings plans</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                <div className="w-10 h-10 rounded-full bg-chart-4/10 flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-chart-4" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground">Debt Manager</h4>
-                  <p className="text-xs text-muted-foreground">Ready to optimize repayments</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
+                <CardHeader>
+                    <CardTitle>Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="pl-2">
+                    <div className="h-[200px] w-full flex items-center justify-center text-muted-foreground">
+                        Chart capability coming soon
+                    </div>
+                </CardContent>
+            </Card>
+             <Card className="col-span-3">
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>
+                        You have no recent transactions.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    
+                </CardContent>
+             </Card>
         </div>
       </div>
     </Layout>

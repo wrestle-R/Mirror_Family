@@ -14,8 +14,8 @@ export function AppBreadcrumb() {
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   // Custom logic for specific routes
-  if (location.pathname.startsWith('/vacxx/')) {
-      return (
+  if (location.pathname === '/profile') {
+    return (
         <Breadcrumb>
             <BreadcrumbList>
                 <BreadcrumbItem>
@@ -25,12 +25,7 @@ export function AppBreadcrumb() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                    <BreadcrumbPage>Details</BreadcrumbPage>
+                    <BreadcrumbPage>Profile</BreadcrumbPage>
                 </BreadcrumbItem>
             </BreadcrumbList>
         </Breadcrumb>

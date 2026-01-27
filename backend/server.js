@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -13,6 +14,10 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+app.use('/api/auth', authRoutes);
+app.use('/api/student', studentRoutes);
+
 
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -37,7 +42,8 @@ mongoose.connection.on('disconnected', () => {
   console.log('MongoDB disconnected');
 });
 
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes); // Moved to top
+
 
 app.get('/api/health', (req, res) => {
   res.json({ 
