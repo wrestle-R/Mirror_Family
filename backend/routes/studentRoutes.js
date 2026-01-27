@@ -6,6 +6,9 @@ const studentController = require('../controllers/studentController');
 router.get('/profile/:firebaseUid', studentController.getProfile);
 router.post('/profile', studentController.updateProfile);
 
+// Income recording
+router.post('/record-monthly-income', studentController.recordMonthlyIncome);
+
 // Goal routes
 router.get('/goals/:firebaseUid', studentController.getGoals);
 router.post('/goals', studentController.addGoal);

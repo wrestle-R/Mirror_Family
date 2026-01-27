@@ -9,7 +9,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import {
   Search, Filter, ArrowUpRight, ArrowDownRight, Calendar, Trash2, Edit2,
   ChevronLeft, ChevronRight, Download, SlidersHorizontal, X, Plus,
-  TrendingUp, TrendingDown, Wallet, MoreVertical, Loader2
+  TrendingUp, TrendingDown, Wallet, MoreVertical, Loader2, Utensils, Car, Film,
+  ShoppingBag, Lightbulb, Home, BookOpen, Hospital, ShoppingCart, Smartphone,
+  Package, Briefcase, Gift, GraduationCap, Banknote, Laptop, ArrowLeftRight,
+  BarChart3, DollarSign, Plane, Dumbbell, Sparkles, Shield
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -23,36 +26,36 @@ import { Separator } from "@/components/ui/separator";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const EXPENSE_CATEGORIES = [
-  { value: 'food', label: 'Food & Dining', icon: '🍔' },
-  { value: 'transportation', label: 'Transportation', icon: '🚗' },
-  { value: 'entertainment', label: 'Entertainment', icon: '🎬' },
-  { value: 'shopping', label: 'Shopping', icon: '🛍️' },
-  { value: 'utilities', label: 'Utilities', icon: '💡' },
-  { value: 'rent', label: 'Rent', icon: '🏠' },
-  { value: 'education', label: 'Education', icon: '📚' },
-  { value: 'healthcare', label: 'Healthcare', icon: '🏥' },
-  { value: 'groceries', label: 'Groceries', icon: '🛒' },
-  { value: 'subscriptions', label: 'Subscriptions', icon: '📱' },
-  { value: 'dining_out', label: 'Dining Out', icon: '🍽️' },
-  { value: 'clothing', label: 'Clothing', icon: '👕' },
-  { value: 'electronics', label: 'Electronics', icon: '📱' },
-  { value: 'travel', label: 'Travel', icon: '✈️' },
-  { value: 'fitness', label: 'Fitness', icon: '💪' },
-  { value: 'personal_care', label: 'Personal Care', icon: '💅' },
-  { value: 'gifts_donations', label: 'Gifts & Donations', icon: '🎁' },
-  { value: 'insurance', label: 'Insurance', icon: '🛡️' },
-  { value: 'other_expense', label: 'Other', icon: '📦' }
+  { value: 'food', label: 'Food & Dining', Icon: Utensils },
+  { value: 'transportation', label: 'Transportation', Icon: Car },
+  { value: 'entertainment', label: 'Entertainment', Icon: Film },
+  { value: 'shopping', label: 'Shopping', Icon: ShoppingBag },
+  { value: 'utilities', label: 'Utilities', Icon: Lightbulb },
+  { value: 'rent', label: 'Rent', Icon: Home },
+  { value: 'education', label: 'Education', Icon: BookOpen },
+  { value: 'healthcare', label: 'Healthcare', Icon: Hospital },
+  { value: 'groceries', label: 'Groceries', Icon: ShoppingCart },
+  { value: 'subscriptions', label: 'Subscriptions', Icon: Smartphone },
+  { value: 'dining_out', label: 'Dining Out', Icon: Utensils },
+  { value: 'clothing', label: 'Clothing', Icon: ShoppingBag },
+  { value: 'electronics', label: 'Electronics', Icon: Smartphone },
+  { value: 'travel', label: 'Travel', Icon: Plane },
+  { value: 'fitness', label: 'Fitness', Icon: Dumbbell },
+  { value: 'personal_care', label: 'Personal Care', Icon: Sparkles },
+  { value: 'gifts_donations', label: 'Gifts & Donations', Icon: Gift },
+  { value: 'insurance', label: 'Insurance', Icon: Shield },
+  { value: 'other_expense', label: 'Other', Icon: Package }
 ];
 
 const INCOME_CATEGORIES = [
-  { value: 'salary', label: 'Salary', icon: '💼' },
-  { value: 'allowance', label: 'Allowance', icon: '💰' },
-  { value: 'freelance', label: 'Freelance', icon: '💻' },
-  { value: 'scholarship', label: 'Scholarship', icon: '🎓' },
-  { value: 'gift', label: 'Gift', icon: '🎁' },
-  { value: 'refund', label: 'Refund', icon: '↩️' },
-  { value: 'investment_return', label: 'Investment Return', icon: '📈' },
-  { value: 'other_income', label: 'Other', icon: '💵' }
+  { value: 'salary', label: 'Salary', Icon: Briefcase },
+  { value: 'allowance', label: 'Allowance', Icon: Banknote },
+  { value: 'freelance', label: 'Freelance', Icon: Laptop },
+  { value: 'scholarship', label: 'Scholarship', Icon: GraduationCap },
+  { value: 'gift', label: 'Gift', Icon: Gift },
+  { value: 'refund', label: 'Refund', Icon: ArrowLeftRight },
+  { value: 'investment_return', label: 'Investment Return', Icon: BarChart3 },
+  { value: 'other_income', label: 'Other', Icon: DollarSign }
 ];
 
 const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];

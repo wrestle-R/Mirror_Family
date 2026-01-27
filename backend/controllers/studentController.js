@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const StudentProfile = require('../models/StudentProfile');
+const Transaction = require('../models/Transaction');
 
 // Get current student profile
 exports.getProfile = async (req, res) => {
@@ -310,5 +311,88 @@ exports.getGoals = async (req, res) => {
   } catch (error) {
     console.error('Error fetching goals:', error);
     res.status(500).json({ success: false, message: 'Server error fetching goals' });
+  }
+};
+
+// Record monthly income as a transaction
+exports.recordMonthlyIncome = async (req, res) => {
+  try {
+    const { firebaseUid } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ success: false, message: 'Firebase UID is required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    if (!profile.monthlyIncome || profile.monthlyIncome <= 0) {
+      return res.status(400).json({ success: false, message: 'No monthly income set in profile' });
+    }
+
+    // Check if income was already recorded this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const existingTransaction = await Transaction.findOne({
+      student: student._id,
+      type: 'income',
+      category: profile.incomeSource?.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_') || 'allowance',
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+      description: { $regex: /^Monthly income/i }
+    });
+
+    if (existingTransaction) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Monthly income already recorded for this month',
+        transaction: existingTransaction
+      });
+    }
+
+    // Map income source to category
+    const categoryMap = {
+      'allowance': 'allowance',
+      'part-time job': 'salary',
+      'part time job': 'salary',
+      'freelance': 'freelance',
+      'internship': 'salary',
+      'investment returns': 'investment_return',
+      'family support': 'allowance',
+      'scholarship': 'scholarship',
+      'other': 'other_income'
+    };
+
+    const category = categoryMap[profile.incomeSource?.toLowerCase()] || 'allowance';
+
+    // Create transaction
+    const transaction = new Transaction({
+      student: student._id,
+      type: 'income',
+      amount: profile.monthlyIncome,
+      category: category,
+      description: `Monthly income from ${profile.incomeSource || 'Allowance'}`,
+      date: new Date(),
+      paymentMethod: 'bank_transfer'
+    });
+
+    await transaction.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Monthly income recorded successfully!',
+      data: { transaction }
+    });
+  } catch (error) {
+    console.error('Error recording monthly income:', error);
+    res.status(500).json({ success: false, message: 'Server error recording monthly income' });
   }
 };
