@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const goalSchema = require('./GoalSchema');
 
 const studentProfileSchema = new mongoose.Schema({
   student: {
@@ -15,7 +16,7 @@ const studentProfileSchema = new mongoose.Schema({
   education: {
     type: String,
     trim: true,
-    default: '' // e.g., "B.Tech CSE, Year 2"
+    default: ''
   },
   parentContact: {
     type: String,
@@ -29,7 +30,7 @@ const studentProfileSchema = new mongoose.Schema({
   incomeSource: {
     type: String,
     trim: true,
-    default: '' // e.g., Part-time job, Allowance, Freelance
+    default: ''
   },
   // Expenses & Budget
   monthlyBudget: {
@@ -72,7 +73,7 @@ const studentProfileSchema = new mongoose.Schema({
   investmentType: {
     type: String,
     trim: true,
-    default: '' // e.g., "Stocks, Mutual Funds, Crypto"
+    default: ''
   },
   // Debts
   totalDebt: {
@@ -82,19 +83,22 @@ const studentProfileSchema = new mongoose.Schema({
   debtDetails: {
     type: String,
     trim: true,
-    default: '' // e.g., "₹50k Education Loan, ₹10k Credit Card"
+    default: ''
   },
   debtPaymentMonthly: {
     type: Number,
     default: 0
   },
-  // Goals
-  shortTermGoals: {
+  // Goals - Now as arrays with individual tracking
+  shortTermGoals: [goalSchema],
+  longTermGoals: [goalSchema],
+  // Legacy goal text fields (kept for backward compatibility)
+  shortTermGoalsText: {
     type: String,
     trim: true,
     default: ''
   },
-  longTermGoals: {
+  longTermGoalsText: {
     type: String,
     trim: true,
     default: ''
@@ -103,15 +107,15 @@ const studentProfileSchema = new mongoose.Schema({
   financialCondition: {
     type: String,
     trim: true,
-    default: 'Stable' // Stable, Good, Needs Improvement, Critical
+    default: 'Stable'
   },
   financialLiteracy: {
     type: String,
-    default: 'Beginner' // Beginner, Intermediate, Advanced
+    default: 'Beginner'
   },
   riskTolerance: {
     type: String,
-    default: 'Low' // Low, Medium, High
+    default: 'Low'
   },
   // Preferences
   currency: {
@@ -120,10 +124,55 @@ const studentProfileSchema = new mongoose.Schema({
   },
   preferredCommunication: {
     type: String,
-    default: 'Email' // Email, SMS, Push Notifications
+    default: 'Email'
   }
 }, {
   timestamps: true
+});
+
+// Method to get active (non-completed) short-term goals
+studentProfileSchema.methods.getActiveShortTermGoals = function() {
+  return this.shortTermGoals.filter(goal => !goal.isCompleted);
+};
+
+// Method to get active (non-completed) long-term goals
+studentProfileSchema.methods.getActiveLongTermGoals = function() {
+  return this.longTermGoals.filter(goal => !goal.isCompleted);
+};
+
+// Method to get completed goals
+studentProfileSchema.methods.getCompletedGoals = function() {
+  return {
+    shortTerm: this.shortTermGoals.filter(goal => goal.isCompleted),
+    longTerm: this.longTermGoals.filter(goal => goal.isCompleted)
+  };
+};
+
+// Method to calculate total expenses
+studentProfileSchema.methods.getTotalExpenses = function() {
+  return this.rentExpense + this.foodExpense + this.transportationExpense + 
+         this.utilitiesExpense + this.otherExpenses;
+};
+
+// Method to calculate net savings potential
+studentProfileSchema.methods.getNetSavingsPotential = function() {
+  return this.monthlyIncome - this.getTotalExpenses() - this.debtPaymentMonthly;
+};
+
+// Virtual for profile completion percentage
+studentProfileSchema.virtual('profileCompletion').get(function() {
+  const fields = [
+    this.education,
+    this.monthlyIncome,
+    this.monthlyBudget,
+    this.currentSavings,
+    this.shortTermGoals.length > 0,
+    this.longTermGoals.length > 0,
+    this.financialCondition,
+    this.financialLiteracy
+  ];
+  const filled = fields.filter(f => f).length;
+  return Math.round((filled / fields.length) * 100);
 });
 
 const StudentProfile = mongoose.model('StudentProfile', studentProfileSchema);

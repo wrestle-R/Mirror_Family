@@ -1,12 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { UserProvider } from "@/context/UserContext";
 import { Toaster } from "@/components/ui/sonner";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { Layout } from "@/components/Dashboard/Layout";
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
+import Transactions from "@/pages/Transactions";
 import NotFound from "@/pages/NotFound";
 
 
@@ -23,21 +25,18 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route
-              path="/dashboard/*"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Layout>
+                    <Outlet />
+                  </Layout>
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route path="dashboard/*" element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="transactions" element={<Transactions />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

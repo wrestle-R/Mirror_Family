@@ -1,6 +1,66 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* React DatePicker Theme */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.react-datepicker__header {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__month-text,
+.react-datepicker__year-text {
+  color: var(--foreground);
+}
+
+.react-datepicker__current-month-label,
+.react-datepicker__navigation-icon::before {
+  color: var(--foreground);
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-range {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--in-range:hover {
+  background: var(--primary);
+}
+
+.react-datepicker__day:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.react-datepicker__day--today {
+  border: 1px solid var(--primary);
+  font-weight: bold;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+}
+
+.dark .react-datepicker {
+  border-color: var(--border);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
