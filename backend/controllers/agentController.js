@@ -28,6 +28,10 @@ const getSystemPrompt = (type) => {
     Estimate realistic monthly savings potential in INR.
     Provide actionable, specific cutback strategies (e.g., "Reduce dining out from ₹5000 to ₹3000 by cooking 3 more meals at home").
     chartData should be expense breakdown by category with values in INR.
+    
+    CHARTDATA EXAMPLE:
+    [{"name": "Food", "value": 2500}, {"name": "Transport", "value": 1200}, {"name": "Entertainment", "value": 800}]
+    
     All amounts in INR (Indian Rupees), no dollar signs.
     `;
   }
@@ -36,10 +40,12 @@ const getSystemPrompt = (type) => {
     Recommend 3-4 specific goal-based savings plans (Emergency Fund - 6 months expenses, Travel, Gadgets, Future Education).
     Calculate exact monthly saving requirements in INR to reach each goal by deadline.
     Suggest automated savings rules (e.g., "Save 20% of income automatically on 1st of month").
-    chartData MUST be an array of objects for 6-month projection. Each object MUST have: {"name": "Month 1", "savings": 15200, "goal": 20000}
-    Example: [{"name": "Month 1", "savings": 15200, "goal": 20000}, {"name": "Month 2", "savings": 17000, "goal": 20000}, ...]
-    Do NOT nest arrays. Each month is a separate object with flat numeric values.
+    chartData should show projected savings growth month-by-month for next 6 months, comparing current trajectory vs goals.
     Include realistic emergency fund targets (3-6 months of expenses).
+    
+    CHARTDATA EXAMPLE:
+    [{"name": "Month 1", "savings": 15200, "goal": 20000}, {"name": "Month 2", "savings": 16500, "goal": 20000}, {"name": "Month 3", "savings": 17800, "goal": 20000}, {"name": "Month 4", "savings": 19100, "goal": 20000}, {"name": "Month 5", "savings": 20400, "goal": 20000}, {"name": "Month 6", "savings": 21700, "goal": 20000}]
+    
     All amounts in INR (Indian Rupees), no dollar signs.
     `;
   }
@@ -52,10 +58,16 @@ const getSystemPrompt = (type) => {
     - Calculate exact payoff date and total interest saved
     - Provide specific monthly payment allocation for each debt
     
+    CHARTDATA EXAMPLE (if debt exists):
+    [{"name": "Month 1", "value": 50000}, {"name": "Month 2", "value": 45000}, {"name": "Month 3", "value": 40000}, {"name": "Month 4", "value": 35000}, {"name": "Month 5", "value": 30000}, {"name": "Month 6", "value": 25000}]
+    
     If no debt:
     - Provide actionable credit score building tips for Indian context (Credit cards, small EMIs, payment history)
     - Explain CIBIL score importance
     - chartData should show ideal credit utilization over 6 months
+    
+    CHARTDATA EXAMPLE (if no debt):
+    [{"name": "Month 1", "value": 30}, {"name": "Month 2", "value": 28}, {"name": "Month 3", "value": 25}, {"name": "Month 4", "value": 22}, {"name": "Month 5", "value": 20}, {"name": "Month 6", "value": 18}]
     
     All amounts in INR (Indian Rupees), no dollar signs.
     `;
@@ -69,9 +81,11 @@ const getSystemPrompt = (type) => {
       * Stocks: Suggest 2-3 beginner-friendly large-cap Indian stocks (e.g., Reliance, TCS, HDFC Bank) with current approx prices
     - Calculate how much they can invest monthly (suggest 10-20% of income)
     - Show potential wealth accumulation over 5 years with compound interest
-    - chartData MUST be flat array: [{"name": "Year 1", "savings": 12000, "indexFund": 13500, "ppf": 12800}, {"name": "Year 2", "savings": 24000, "indexFund": 28000, "ppf": 26000}, ...]
-    - Each object should have numeric values only, NO nested arrays
+    - chartData should compare returns: [{"name": "Year 1", "Savings": X, "Index Fund": Y, "PPF": Z}, ...] for 5 years
     - Provide specific action steps (e.g., "Open Zerodha/Groww account, start ₹2000/month SIP in Nifty Index")
+    
+    CHARTDATA EXAMPLE:
+    [{"name": "Year 1", "savings": 12000, "indexFund": 13200, "ppf": 12500}, {"name": "Year 2", "savings": 24000, "indexFund": 27500, "ppf": 26000}, {"name": "Year 3", "savings": 36000, "indexFund": 43000, "ppf": 40500}, {"name": "Year 4", "savings": 48000, "indexFund": 60000, "ppf": 56000}, {"name": "Year 5", "savings": 60000, "indexFund": 79000, "ppf": 72500}]
     
     All amounts in INR (Indian Rupees), no dollar signs.
     Risk assessment based on age and current savings.
