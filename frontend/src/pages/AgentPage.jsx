@@ -49,6 +49,17 @@ const AgentPage = () => {
     fetchData();
   }, [type, user]);
 
+  useEffect(() => {
+    // Load ElevenLabs Convai widget script
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
@@ -204,14 +215,7 @@ const AgentPage = () => {
   }
 
   return (
-   <>
     <div className="flex flex-col gap-6 p-4 md:p-8 max-w-7xl mx-auto w-full">
-    <elevenlabs-convai
-    agent-id="agent_7101kg2q76p1ewz9x195s6yt4twz"
-    dynamic-variables={JSON.stringify(convaiVariables)}
-  />
-  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async />
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -228,6 +232,12 @@ const AgentPage = () => {
           {data ? "Regenerate Analysis" : "Generate Analysis"}
         </Button>
       </div>
+
+      {/* ElevenLabs Convai Widget */}
+      <elevenlabs-convai
+        agent-id="agent_7101kg2q76p1ewz9x195s6yt4twz"
+        dynamic-variables={JSON.stringify(convaiVariables)}
+      />
 
       {!data ? (
         <Card className="border-dashed">
@@ -289,7 +299,6 @@ const AgentPage = () => {
         </div>
       )}
     </div>
-   </>
   );
 };
 
