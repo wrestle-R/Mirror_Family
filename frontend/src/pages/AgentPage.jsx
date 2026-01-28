@@ -16,6 +16,8 @@ const AgentPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [profile, setProfile] = useState(null);
+
 
   // Map type to display info
   const agentInfo = {
@@ -26,6 +28,22 @@ const AgentPage = () => {
   };
 
   const info = agentInfo[type] || agentInfo.budget;
+
+  useEffect(() => {
+    if (!user) return;
+  
+    axios
+      .get(`${API_URL}/api/student/profile/${user.uid}`)
+      .then(res => {
+        if (res.data?.data?.profile) {
+          setProfile(res.data.data.profile);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching profile", err);
+      });
+  }, [user]);
+  
 
   useEffect(() => {
     fetchData();
@@ -48,6 +66,33 @@ const AgentPage = () => {
       setLoading(false);
     }
   };
+  const convaiVariables = {
+    user_name: user?.displayName || profile?.name || "User",
+    email: user?.email || "",
+  
+    agent_type: type,
+  
+    monthly_income: profile?.monthlyIncome || 0,
+    monthly_budget: profile?.monthlyBudget || 0,
+    current_savings: profile?.currentSavings || 0,
+    savings_goal: profile?.savingsGoal || 0,
+  
+    total_debt: profile?.totalDebt || 0,
+    debt_payment_monthly: profile?.debtPaymentMonthly || 0,
+  
+    investments_amount: profile?.investmentsAmount || 0,
+    investment_type: profile?.investmentType || "none",
+  
+    financial_literacy: profile?.financialLiteracy || "Beginner",
+    risk_tolerance: profile?.riskTolerance || "Low",
+  
+    short_term_goals_count: profile?.shortTermGoals?.length || 0,
+    long_term_goals_count: profile?.longTermGoals?.length || 0,
+  
+    has_analysis: data ? "yes" : "no",
+  };
+  
+  
 
   const handleGenerate = async () => {
     if (!user) return;
@@ -133,7 +178,14 @@ const AgentPage = () => {
   }
 
   return (
+   <>
     <div className="flex flex-col gap-6 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <elevenlabs-convai
+    agent-id="agent_7101kg2q76p1ewz9x195s6yt4twz"
+    dynamic-variables={JSON.stringify(convaiVariables)}
+  />
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async />
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -211,6 +263,7 @@ const AgentPage = () => {
         </div>
       )}
     </div>
+   </>
   );
 };
 
