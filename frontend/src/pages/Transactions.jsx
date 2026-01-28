@@ -254,7 +254,7 @@ const Transactions = () => {
   const netBalance = (stats.totalIncome || 0) - (stats.totalExpense || 0);
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 bg-gradient-to-br from-background via-primary/5 to-background min-h-screen">
+    <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

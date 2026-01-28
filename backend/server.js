@@ -6,6 +6,8 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const agentRoutes = require('./routes/agentRoutes');
+const copilotRoutes = require('./routes/copilotRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/agents', agentRoutes);
+app.use('/api/copilot', copilotRoutes);
 
 
 app.use((req, res, next) => {

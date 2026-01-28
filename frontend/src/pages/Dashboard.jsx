@@ -359,7 +359,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="flex-1 space-y-6 p-8 pt-6 bg-gradient-to-br from-background via-primary/5 to-background min-h-screen">
+      <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -817,53 +817,57 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Tip */}
-            <Card className="border-l-4 border-l-cyan-500 bg-gradient-to-br from-cyan-500/5 to-transparent">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-cyan-500" />
-                  Quick Tip
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  {budgetUsed > 80 
-                    ? <><AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" /> You've used most of your budget. Consider reviewing your spending categories.</>
-                    : savingsProgress < 30
-                    ? <><Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" /> Try to save at least 20% of your income. Small amounts add up!</>
-                    : netBalance < 0
-                    ? <><TrendingDown className="w-4 h-4 text-red-500 flex-shrink-0" /> You're spending more than you earn. Review your expenses.</>
-                    : <><Sparkles className="w-4 h-4 text-cyan-500 flex-shrink-0" /> Great job! Keep tracking your expenses to maintain financial health.</>
-                  }
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" onClick={() => setShowAddTransaction(true)} className="h-auto py-3 flex-col gap-1">
-                  <Plus className="w-4 h-4" />
-                  <span className="text-xs">Add Transaction</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/transactions")} className="h-auto py-3 flex-col gap-1">
-                  <Receipt className="w-4 h-4" />
-                  <span className="text-xs">View History</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/profile")} className="h-auto py-3 flex-col gap-1">
-                  <Target className="w-4 h-4" />
-                  <span className="text-xs">Edit Goals</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/profile")} className="h-auto py-3 flex-col gap-1">
-                  <CreditCard className="w-4 h-4" />
-                  <span className="text-xs">Update Budget</span>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
+        </div>
+
+        {/* Quick Tip and Quick Actions Row - Below Recent Transactions and Goals */}
+        <div className="grid gap-6 md:grid-cols-2 mt-6">
+          {/* Quick Tip */}
+          <Card className="border-l-4 border-l-cyan-500 bg-linear-to-br from-cyan-500/5 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="w-5 h-5 text-cyan-500" />
+                Quick Tip
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                {budgetUsed > 80 
+                  ? <><AlertCircle className="w-4 h-4 text-orange-500 shrink-0" /> You've used most of your budget. Consider reviewing your spending categories.</>
+                  : savingsProgress < 30
+                  ? <><Lightbulb className="w-4 h-4 text-yellow-500 shrink-0" /> Try to save at least 20% of your income. Small amounts add up!</>
+                  : netBalance < 0
+                  ? <><TrendingDown className="w-4 h-4 text-red-500 shrink-0" /> You're spending more than you earn. Review your expenses.</>
+                  : <><Sparkles className="w-4 h-4 text-cyan-500 shrink-0" /> Great job! Keep tracking your expenses to maintain financial health.</>
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAddTransaction(true)} className="h-auto py-3 flex-col gap-1">
+                <Plus className="w-4 h-4" />
+                <span className="text-xs">Add Transaction</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/transactions")} className="h-auto py-3 flex-col gap-1">
+                <Receipt className="w-4 h-4" />
+                <span className="text-xs">View History</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/profile")} className="h-auto py-3 flex-col gap-1">
+                <Target className="w-4 h-4" />
+                <span className="text-xs">Edit Goals</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/profile")} className="h-auto py-3 flex-col gap-1">
+                <CreditCard className="w-4 h-4" />
+                <span className="text-xs">Update Budget</span>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

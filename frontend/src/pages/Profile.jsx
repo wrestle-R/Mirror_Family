@@ -510,11 +510,11 @@ const Profile = () => {
 
   return (
     <>
-      <div className="w-full max-w-full bg-gradient-to-br from-background via-primary/5 to-background min-h-screen">
+      <div className="w-full max-w-full min-h-screen">
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/70">
               Student Financial Profile
             </h1>
             <p className="text-muted-foreground mt-2">
@@ -523,7 +523,7 @@ const Profile = () => {
           </div>
 
           {/* Progress Bar with Last Saved */}
-          <Card className="mb-8 border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
+          <Card className="mb-8 border-l-4 border-l-primary bg-linear-to-r from-primary/5 to-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -556,8 +556,7 @@ const Profile = () => {
                 <span className="hidden sm:inline">Personal</span>
               </TabsTrigger>
               <TabsTrigger value="income" className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                <span className="hidden sm:inline">Income</span>
+                <span className="hidden sm:inline">₹ Income</span>
               </TabsTrigger>
               <TabsTrigger value="expenses" className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
