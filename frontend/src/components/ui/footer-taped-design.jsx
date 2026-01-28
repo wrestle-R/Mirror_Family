@@ -66,8 +66,8 @@ export const Component = () => {
           </div>
         </div>
       </div>
-      <div className="my-12 px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm text-muted-foreground">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-8 items-start sm:items-center">
+      <div className="my-12 flex flex-col md:flex-row justify-end items-start md:items-center gap-4 text-sm text-muted-foreground">
+        <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-8 justify-between items-start sm:items-center">
           <p className="whitespace-nowrap">
             ©{currentYear} Money Council. All rights reserved.
           </p>
@@ -75,22 +75,6 @@ export const Component = () => {
             <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
             <Link to="/terms-and-conditions" className="text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</Link>
           </div>
-          <a
-            href="https://github.com/wrestle-R/MoneyCouncil/tree/main/frontend"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline mt-2 block"
-          >
-            View Frontend on GitHub
-          </a>
-        </div>
-        <div className="flex gap-4 items-center">
-          <span className="hover:text-foreground transition-colors" aria-hidden>
-            <Linkedin className="w-5 h-5 fill-current" />
-          </span>
-          <span className="hover:text-foreground transition-colors" aria-hidden>
-            <Github className="w-5 h-5 fill-current" />
-          </span>
         </div>
       </div>
     </footer>

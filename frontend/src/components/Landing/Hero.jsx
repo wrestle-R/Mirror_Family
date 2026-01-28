@@ -42,37 +42,37 @@ const Hero = () => {
 
         {/* Badge */}
         <div
-          className="mx-auto mt-6 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-card/10 px-4 py-2 backdrop-blur-sm border border-border/20">
-          <span className="text-sm font-medium text-foreground">
+          className="mx-auto mt-24 md:mt-40 lg:mt-40 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-card/10 px-4 py-2 backdrop-blur-sm border border-border/20">
+          <span className="text-sm md:text-base font-medium text-foreground">
             Democratizing financial literacy
           </span>
           <ArrowRight className="h-4 w-4 text-foreground" />
         </div>
 
         {/* Hero section */}
-        <div className="container mx-auto mt-12 px-4 text-center">
+        <div className="container mx-auto mt-6 px-4 text-center">
           <h1
-            className="mx-auto max-w-4xl text-5xl font-bold leading-tight text-foreground md:text-6xl lg:text-7xl">
+            className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
             Master Your Finances with MoneyCouncil
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg md:text-xl text-muted-foreground">
             A secure, student-focused platform to track expenses, save efficiently, and learn financial skills for life.
           </p>
           <div
-            className="mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+            className="mt-8 sm:mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
             <button
               onClick={() => navigate('/auth')}
-              className="h-12 rounded-full bg-primary px-8 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl">
+              className="h-12 sm:h-14 rounded-full bg-primary px-8 sm:px-10 text-base sm:text-lg font-medium text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl">
               Start Your Journey
             </button>
             <button
               onClick={() => navigate('/about')}
-              className="h-12 rounded-full bg-secondary px-8 text-base font-medium text-secondary-foreground hover:bg-secondary/90 transition-all duration-200 border border-border shadow-md hover:shadow-lg">
+              className="h-12 sm:h-14 rounded-full bg-secondary px-8 sm:px-10 text-base sm:text-lg font-medium text-secondary-foreground hover:bg-secondary/90 transition-all duration-200 border border-border shadow-md hover:shadow-lg">
               Learn More
             </button>
           </div>
 
-          <div className="relative mx-auto my-20 w-full max-w-6xl">
+          <div className="relative mx-auto my-12 sm:my-16 md:my-20 w-full max-w-6xl">
             <div
               className="absolute inset-0 rounded shadow-lg bg-card blur-[10rem] bg-grainy opacity-20" />
 
