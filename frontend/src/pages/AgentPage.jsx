@@ -5,7 +5,7 @@ import axios from "axios";
 import { Loader2, RefreshCw, TrendingUp, TrendingDown, PiggyBank, Target, Shield, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -135,21 +135,44 @@ const AgentPage = () => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip 
+              contentStyle={{ borderRadius: "8px", border: "None", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+            />
           </PieChart>
         </ResponsiveContainer>
       );
     }
 
     if (type === 'savings' || type === 'investment') { // Line/Area Chart for growth
+      // Get all keys except "name" to render multiple lines
+      const dataKeys = data.chartData.length > 0 
+        ? Object.keys(data.chartData[0]).filter(key => key !== 'name')
+        : ['value'];
+      
+      const colors = [info.color, "#f59e0b", "#3b82f6", "#ef4444", "#ec4899"];
+
       return (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data.chartData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
-            <Tooltip />
-            <Line type="monotone" dataKey="value" stroke={info.color} strokeWidth={2} dot={false} />
+            <Tooltip 
+              contentStyle={{ borderRadius: "8px", border: "None", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+            />
+            <Legend />
+            {dataKeys.map((key, index) => (
+              <Line 
+                key={key}
+                type="monotone" 
+                dataKey={key} 
+                stroke={colors[index % colors.length]} 
+                strokeWidth={2} 
+                dot={false}
+                activeDot={{ r: 6 }}
+                name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       );
@@ -162,7 +185,10 @@ const AgentPage = () => {
           <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
           <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
           <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
-          <Tooltip cursor={{fill: 'transparent'}} />
+          <Tooltip 
+            cursor={{fill: 'transparent'}}
+            contentStyle={{ borderRadius: "8px", border: "None", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+          />
           <Bar dataKey="value" fill={info.color} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
