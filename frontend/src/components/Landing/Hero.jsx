@@ -80,11 +80,11 @@ const Hero = () => {
             <img
               src={
                 theme === 'dark'
-                  ? "https://placehold.co/1200x800/1e293b/ffffff?text=Dashboard+Dark+Mode" 
-                  : "https://placehold.co/1200x800/f1f5f9/0f172a?text=Dashboard+Light+Mode" 
+                  ? "/dark mode.jpeg" 
+                  : "/light mode.jpeg" 
               }
               alt={`Dashboard Interface - ${theme === 'dark' ? 'Dark' : 'Light'} Mode`}
-              className="relative w-full h-auto shadow-md grayscale-100 rounded border border-border transition-all duration-500"
+              className="relative w-full h-auto shadow-md rounded border border-border transition-all duration-500"
               loading="eager"
             />
           </div>
