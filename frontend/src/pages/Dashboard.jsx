@@ -115,13 +115,15 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Auto-record monthly income when dashboard loads
+  // Auto-record monthly income removed as per user request
+  /* 
   useEffect(() => {
     if (profileData?.monthlyIncome > 0 && !incomeRecordedRef.current && user?.uid) {
       incomeRecordedRef.current = true;
       autoRecordMonthlyIncome();
     }
-  }, [profileData, user]);
+  }, [profileData, user]); 
+  */
 
   const autoRecordMonthlyIncome = async () => {
     try {

@@ -337,28 +337,7 @@ exports.recordMonthlyIncome = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No monthly income set in profile' });
     }
 
-    // Check if income was already recorded this month
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-    const existingTransaction = await Transaction.findOne({
-      student: student._id,
-      type: 'income',
-      category: profile.incomeSource?.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_') || 'allowance',
-      date: { $gte: startOfMonth, $lte: endOfMonth },
-      description: { $regex: /^Monthly income/i }
-    });
-
-    if (existingTransaction) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Monthly income already recorded for this month',
-        transaction: existingTransaction
-      });
-    }
-
-    // Map income source to category
+    // Map income source to category first to ensure consistency in check and creation
     const categoryMap = {
       'allowance': 'allowance',
       'part-time job': 'salary',
@@ -372,6 +351,29 @@ exports.recordMonthlyIncome = async (req, res) => {
     };
 
     const category = categoryMap[profile.incomeSource?.toLowerCase()] || 'allowance';
+
+    // Check if income was already recorded this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const existingTransaction = await Transaction.findOne({
+      student: student._id,
+      type: 'income',
+      // We check for transactions that look like monthly income, regardless of category change to prevent gaming
+      // But we can include category check if we want to allow different types of monthly income.
+      // Given user request "cant add it twice", we should be strict.
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+      description: { $regex: /^Monthly income/i }
+    });
+
+    if (existingTransaction) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Monthly income already recorded for this month',
+        transaction: existingTransaction
+      });
+    }
 
     // Create transaction
     const transaction = new Transaction({
