@@ -1,6 +1,9 @@
 const Student = require('../models/Student');
 const StudentProfile = require('../models/StudentProfile');
 const Transaction = require('../models/Transaction');
+const Groq = require('groq-sdk');
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // Get current student profile
 exports.getProfile = async (req, res) => {
@@ -396,5 +399,189 @@ exports.recordMonthlyIncome = async (req, res) => {
   } catch (error) {
     console.error('Error recording monthly income:', error);
     res.status(500).json({ success: false, message: 'Server error recording monthly income' });
+  }
+};
+
+// Voice onboarding - process voice answers and extract profile data using Groq
+exports.voiceOnboarding = async (req, res) => {
+  try {
+    const { firebaseUid, answers } = req.body;
+
+    if (!firebaseUid || !answers) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and answers are required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // Build the prompt for Groq to extract structured data
+    const systemPrompt = `You are a helpful assistant that extracts financial profile data from conversational voice answers.
+Extract the following fields from the user's answers and return ONLY a valid JSON object with these exact keys:
+
+{
+  "name": "string - full name",
+  "age": "number - age in years (calculate birth year from this)",
+  "education": "string - education details",
+  "contactNumber": "string - phone number if mentioned",
+  "monthlyIncome": "number - total monthly income in INR",
+  "incomeSource": "string - primary source of income (Allowance, Part-Time Job, Freelance, Internship, Family Support, Scholarship, Other)",
+  "monthlyBudget": "number - estimated total monthly spending/budget in INR",
+  "rentExpense": "number - monthly rent in INR (0 if not mentioned)",
+  "foodExpense": "number - monthly food expenses in INR",
+  "transportationExpense": "number - monthly transport costs in INR",
+  "utilitiesExpense": "number - monthly utilities in INR",
+  "otherExpenses": "number - other monthly expenses in INR",
+  "currentSavings": "number - total current savings in INR",
+  "savingsGoal": "number - savings target in INR",
+  "investmentsAmount": "number - total invested amount in INR (0 if none)",
+  "investmentType": "string - type of investments (None, Mutual Funds, Stocks, Fixed Deposits, PPF, SIP, Other)",
+  "totalDebt": "number - total debt amount in INR (0 if none)",
+  "debtDetails": "string - debt description if any",
+  "financialLiteracy": "string - Beginner, Intermediate, or Advanced based on their knowledge",
+  "riskTolerance": "string - Low, Medium, or High based on their goals",
+  "shortTermGoals": [{"title": "string", "targetAmount": number, "description": "string"}],
+  "longTermGoals": [{"title": "string", "targetAmount": number, "description": "string"}]
+}
+
+IMPORTANT:
+- All monetary values should be numbers in INR (remove "rupees", "lakhs" - convert 1 lakh = 100000)
+- If a value is not mentioned, use reasonable defaults (0 for expenses not mentioned)
+- Parse "lakhs" correctly: 1.5 lakhs = 150000, 2 lakhs = 200000
+- Parse "k" or "thousand": 25k = 25000, 50 thousand = 50000
+- Return ONLY the JSON object, no explanations or markdown
+- For goals, create structured objects from the descriptions`;
+
+    const userPrompt = `Here are the user's voice answers to financial profile questions:
+
+1. Introduction (name, age, education, contact):
+${answers.intro || 'Not provided'}
+
+2. Income details:
+${answers.income || 'Not provided'}
+
+3. Expenses breakdown:
+${answers.expenses || 'Not provided'}
+
+4. Savings and investments:
+${answers.savings || 'Not provided'}
+
+5. Financial goals:
+${answers.goals || 'Not provided'}
+
+Extract all the profile data and return as JSON.`;
+
+    console.log('Voice onboarding: Processing answers for user:', firebaseUid);
+
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.2,
+      max_tokens: 2000,
+      response_format: { type: 'json_object' }
+    });
+
+    let extractedData;
+    try {
+      const content = completion.choices[0]?.message?.content;
+      extractedData = JSON.parse(content);
+      console.log('Voice onboarding: Extracted data:', extractedData);
+    } catch (parseError) {
+      console.error('Voice onboarding: JSON parse error:', parseError);
+      return res.status(500).json({ success: false, message: 'Failed to parse AI response' });
+    }
+
+    // Update student name if provided
+    if (extractedData.name) {
+      student.name = extractedData.name;
+    }
+    if (extractedData.contactNumber) {
+      student.contactNumber = extractedData.contactNumber;
+    }
+    await student.save();
+
+    // Update or create profile
+    let profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      profile = new StudentProfile({ student: student._id });
+    }
+
+    // Calculate date of birth from age
+    if (extractedData.age) {
+      const birthYear = new Date().getFullYear() - extractedData.age;
+      profile.dateOfBirth = new Date(birthYear, 0, 1); // Jan 1 of birth year
+    }
+
+    // Update profile fields
+    if (extractedData.education) profile.education = extractedData.education;
+    if (extractedData.monthlyIncome !== undefined) profile.monthlyIncome = Number(extractedData.monthlyIncome) || 0;
+    if (extractedData.incomeSource) profile.incomeSource = extractedData.incomeSource;
+    if (extractedData.monthlyBudget !== undefined) profile.monthlyBudget = Number(extractedData.monthlyBudget) || 0;
+    if (extractedData.rentExpense !== undefined) profile.rentExpense = Number(extractedData.rentExpense) || 0;
+    if (extractedData.foodExpense !== undefined) profile.foodExpense = Number(extractedData.foodExpense) || 0;
+    if (extractedData.transportationExpense !== undefined) profile.transportationExpense = Number(extractedData.transportationExpense) || 0;
+    if (extractedData.utilitiesExpense !== undefined) profile.utilitiesExpense = Number(extractedData.utilitiesExpense) || 0;
+    if (extractedData.otherExpenses !== undefined) profile.otherExpenses = Number(extractedData.otherExpenses) || 0;
+    if (extractedData.currentSavings !== undefined) profile.currentSavings = Number(extractedData.currentSavings) || 0;
+    if (extractedData.savingsGoal !== undefined) profile.savingsGoal = Number(extractedData.savingsGoal) || 0;
+    if (extractedData.investmentsAmount !== undefined) profile.investmentsAmount = Number(extractedData.investmentsAmount) || 0;
+    if (extractedData.investmentType) profile.investmentType = extractedData.investmentType;
+    if (extractedData.totalDebt !== undefined) profile.totalDebt = Number(extractedData.totalDebt) || 0;
+    if (extractedData.debtDetails) profile.debtDetails = extractedData.debtDetails;
+    if (extractedData.financialLiteracy) profile.financialLiteracy = extractedData.financialLiteracy;
+    if (extractedData.riskTolerance) profile.riskTolerance = extractedData.riskTolerance;
+
+    // Process short-term goals
+    if (extractedData.shortTermGoals && Array.isArray(extractedData.shortTermGoals)) {
+      const newShortTermGoals = extractedData.shortTermGoals.map((goal, index) => ({
+        id: `goal_short_${Date.now()}_${index}`,
+        title: goal.title || 'Untitled Goal',
+        description: goal.description || '',
+        targetAmount: Number(goal.targetAmount) || 0,
+        currentAmount: 0,
+        deadline: null,
+        priority: 'medium',
+        category: 'savings',
+        isCompleted: false,
+        completedAt: null,
+        createdAt: new Date()
+      }));
+      profile.shortTermGoals = [...profile.shortTermGoals, ...newShortTermGoals];
+    }
+
+    // Process long-term goals
+    if (extractedData.longTermGoals && Array.isArray(extractedData.longTermGoals)) {
+      const newLongTermGoals = extractedData.longTermGoals.map((goal, index) => ({
+        id: `goal_long_${Date.now()}_${index}`,
+        title: goal.title || 'Untitled Goal',
+        description: goal.description || '',
+        targetAmount: Number(goal.targetAmount) || 0,
+        currentAmount: 0,
+        deadline: null,
+        priority: 'medium',
+        category: 'savings',
+        isCompleted: false,
+        completedAt: null,
+        createdAt: new Date()
+      }));
+      profile.longTermGoals = [...profile.longTermGoals, ...newLongTermGoals];
+    }
+
+    await profile.save();
+
+    console.log('Voice onboarding: Profile saved successfully');
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile created from voice input successfully',
+      data: { student, profile }
+    });
+  } catch (error) {
+    console.error('Error in voice onboarding:', error);
+    res.status(500).json({ success: false, message: 'Server error processing voice onboarding' });
   }
 };

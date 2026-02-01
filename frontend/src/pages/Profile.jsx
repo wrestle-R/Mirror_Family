@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,11 +16,12 @@ import {
   Briefcase, Save, Plus, Trash2, Calendar, X, ArrowUpRight, Utensils, Car, Film,
   ShoppingBag, Lightbulb, Home, BookOpen, Hospital, ShoppingCart, Smartphone,
   Package, GraduationCap, Gift, Banknote, Laptop, ArrowLeftRight, BarChart3, Plane,
-  Dumbbell, Sparkles, Shield
+  Dumbbell, Sparkles, Shield, Mic
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import VoiceOnboarding from "@/components/VoiceOnboarding";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -78,10 +80,24 @@ const PAYMENT_METHODS = [
 
 const Profile = () => {
   const { user, student, syncStudentWithBackend } = useUser();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [completion, setCompletion] = useState(0);
   const [lastSaved, setLastSaved] = useState(null);
+  const [showVoiceOnboarding, setShowVoiceOnboarding] = useState(false);
+  
+  // Auto-open voice onboarding for new users
+  useEffect(() => {
+    if (location.state?.isNewUser && !loading) {
+      // Small delay to ensure the page is rendered
+      const timer = setTimeout(() => {
+        setShowVoiceOnboarding(true);
+        toast.info("Let's set up your profile quickly with voice! 🎤");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, loading]);
   
   // Transaction modal state
   const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -513,13 +529,22 @@ const Profile = () => {
       <div className="w-full max-w-full min-h-screen">
         <div className="p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/70">
-              Student Financial Profile
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Build your complete financial profile and track your goals
-            </p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/70">
+                Student Financial Profile
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Build your complete financial profile and track your goals
+              </p>
+            </div>
+            <Button 
+              onClick={() => setShowVoiceOnboarding(true)}
+              className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            >
+              <Mic className="w-4 h-4" />
+              Fill Quicker
+            </Button>
           </div>
 
           {/* Progress Bar with Last Saved */}
@@ -1121,6 +1146,48 @@ const Profile = () => {
           </Card>
         </div>
       )}
+
+      {/* Voice Onboarding Modal */}
+      <VoiceOnboarding
+        open={showVoiceOnboarding}
+        onOpenChange={setShowVoiceOnboarding}
+        onProfileUpdate={(data) => {
+          // Refresh the profile data
+          if (data?.student) {
+            setFormData(prev => ({
+              ...prev,
+              name: data.student.name || prev.name,
+              contactNumber: data.student.contactNumber || prev.contactNumber
+            }));
+          }
+          if (data?.profile) {
+            setFormData(prev => ({
+              ...prev,
+              dateOfBirth: data.profile.dateOfBirth ? new Date(data.profile.dateOfBirth).toISOString().split('T')[0] : prev.dateOfBirth,
+              education: data.profile.education || prev.education,
+              monthlyIncome: data.profile.monthlyIncome || prev.monthlyIncome,
+              incomeSource: data.profile.incomeSource || prev.incomeSource,
+              monthlyBudget: data.profile.monthlyBudget || prev.monthlyBudget,
+              rentExpense: data.profile.rentExpense || prev.rentExpense,
+              foodExpense: data.profile.foodExpense || prev.foodExpense,
+              transportationExpense: data.profile.transportationExpense || prev.transportationExpense,
+              utilitiesExpense: data.profile.utilitiesExpense || prev.utilitiesExpense,
+              otherExpenses: data.profile.otherExpenses || prev.otherExpenses,
+              currentSavings: data.profile.currentSavings || prev.currentSavings,
+              savingsGoal: data.profile.savingsGoal || prev.savingsGoal,
+              investmentsAmount: data.profile.investmentsAmount || prev.investmentsAmount,
+              investmentType: data.profile.investmentType || prev.investmentType,
+              totalDebt: data.profile.totalDebt || prev.totalDebt,
+              debtDetails: data.profile.debtDetails || prev.debtDetails,
+              financialLiteracy: data.profile.financialLiteracy || prev.financialLiteracy,
+              riskTolerance: data.profile.riskTolerance || prev.riskTolerance
+            }));
+            setShortTermGoals(data.profile.shortTermGoals || []);
+            setLongTermGoals(data.profile.longTermGoals || []);
+            calculateCompletion(data.profile);
+          }
+        }}
+      />
     </>
   );
 };

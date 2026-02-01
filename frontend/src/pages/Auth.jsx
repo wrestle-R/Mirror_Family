@@ -101,10 +101,15 @@ const Auth = () => {
       toast.success(isLogin ? "Welcome back!" : "Account created successfully!");
       
       console.log("Auth: Syncing with backend...");
-      await syncStudentWithBackend(userCredential.user, formData.name);
+      const syncResult = await syncStudentWithBackend(userCredential.user, formData.name);
       console.log("Auth: Backend sync complete");
       
-      navigate("/dashboard");
+      // Redirect new users to profile page, existing users to dashboard
+      if (isLogin) {
+        navigate("/dashboard");
+      } else {
+        navigate("/profile", { state: { isNewUser: true } });
+      }
       
     } catch (error) {
       console.error("Auth: Email auth error:", error);
@@ -164,13 +169,21 @@ const Auth = () => {
       const result = await signInWithPopup(auth, googleProvider);
       console.log("Auth: Google sign-in successful:", result.user.uid);
       
-      toast.success("Welcome to Money Council!");
+      // Check if this is a new user by checking additionalUserInfo
+      const isNewUser = result._tokenResponse?.isNewUser || false;
+      
+      toast.success(isNewUser ? "Welcome to Money Council!" : "Welcome back!");
       
       console.log("Auth: Syncing Google user with backend...");
       await syncStudentWithBackend(result.user);
       console.log("Auth: Backend sync complete");
       
-      navigate("/dashboard");
+      // Redirect new users to profile page to complete setup
+      if (isNewUser) {
+        navigate("/profile", { state: { isNewUser: true } });
+      } else {
+        navigate("/dashboard");
+      }
       
     } catch (error) {
       console.error("Auth: Google sign-in error:", error);
