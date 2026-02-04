@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import Transactions from "@/pages/Transactions";
 import AgentPage from "@/pages/AgentPage";
+import GoalPlans from "@/pages/GoalPlans";
 import NotFound from "@/pages/NotFound";
 
 
@@ -37,6 +38,7 @@ function App() {
               <Route path="dashboard/*" element={<Dashboard />} />
               <Route path="profile" element={<Profile />} />
               <Route path="transactions" element={<Transactions />} />
+              <Route path="goals" element={<GoalPlans />} />
               <Route path="agent/:type" element={<AgentPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />

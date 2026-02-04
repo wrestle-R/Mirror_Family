@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { toast } from "sonner";
@@ -22,6 +22,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -85,7 +94,7 @@ const Transactions = () => {
     category: '',
     startDate: null,
     endDate: null,
-    sortBy: 'date',
+    sortBy: 'createdAt',
     sortOrder: 'desc'
   });
 
@@ -105,6 +114,9 @@ const Transactions = () => {
     paymentMethod: 'upi',
     merchant: ''
   });
+
+  const [receiptImages, setReceiptImages] = useState([]);
+  const [importingBills, setImportingBills] = useState(false);
 
   useEffect(() => {
     if (user?.uid) {
@@ -174,6 +186,8 @@ const Transactions = () => {
       if (response.data.success) {
         toast.success("Transaction added successfully!");
         setShowAddModal(false);
+        setReceiptImages([]);
+        setPagination(prev => ({ ...prev, page: 1 }));
         setNewTransaction({
           amount: '',
           category: 'food',
@@ -182,13 +196,46 @@ const Transactions = () => {
           paymentMethod: 'upi',
           merchant: ''
         });
-        fetchTransactions();
+        if (pagination.page === 1) fetchTransactions();
       }
     } catch (error) {
       console.error("Error adding transaction:", error);
       toast.error("Failed to add transaction");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImportBills = async () => {
+    if (!receiptImages.length) {
+      toast.error("Please add at least one bill photo");
+      return;
+    }
+
+    setImportingBills(true);
+    try {
+      const formData = new FormData();
+      formData.append("firebaseUid", user.uid);
+      receiptImages.forEach((file) => formData.append("images", file));
+
+      const response = await axios.post(`${API_URL}/api/transactions/import-bills`, formData);
+      if (response.data.success) {
+        const created = response.data.data?.created || [];
+        const warnings = response.data.data?.warnings || [];
+        toast.success(`Imported ${created.length} transaction(s)`);
+        if (warnings.length) toast.message(warnings[0]);
+        setReceiptImages([]);
+        setShowAddModal(false);
+        setPagination(prev => ({ ...prev, page: 1 }));
+        if (pagination.page === 1) fetchTransactions();
+      } else {
+        toast.error(response.data.message || "Failed to import bills");
+      }
+    } catch (error) {
+      console.error("Error importing bills:", error);
+      toast.error("Failed to import bills");
+    } finally {
+      setImportingBills(false);
     }
   };
 
@@ -241,10 +288,21 @@ const Transactions = () => {
       category: '',
       startDate: null,
       endDate: null,
-      sortBy: 'date',
+      sortBy: 'createdAt',
       sortOrder: 'desc'
     });
     setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const getPaginationRange = (currentPage, totalPages) => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const range = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+    const pages = Array.from(range)
+      .filter((p) => p >= 1 && p <= totalPages)
+      .sort((a, b) => a - b);
+    return pages;
   };
 
   const getCategoryInfo = (category) => {
@@ -288,10 +346,15 @@ const Transactions = () => {
         <Card className="border-l-4 border-l-red-500">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Expenses</p>
-              <p className="text-2xl font-bold text-red-600">
-                -₹{(stats.totalExpense || 0).toLocaleString()}
-              </p>
+                      <p className="text-sm text-muted-foreground">Total Expenses</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {(() => {
+                        const fromStats = stats?.totalExpense;
+                        const fallback = transactions.reduce((sum, t) => sum + (t.type === 'expense' ? Number(t.amount || 0) : 0), 0);
+                        const display = typeof fromStats === 'number' && !Number.isNaN(fromStats) ? fromStats : fallback;
+                        return `₹${(display || 0).toLocaleString()}`;
+                      })()}
+                    </p>
             </div>
             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
               <TrendingDown className="w-6 h-6 text-red-600" />
@@ -459,10 +522,10 @@ const Transactions = () => {
                 return (
                   <div 
                     key={tx._id} 
-                    className="flex items-center gap-4 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
                   >
                     {/* Icon */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl ${
+                    <div className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center text-xl ${
                       tx.type === 'income' 
                         ? 'bg-green-100 dark:bg-green-900/30' 
                         : 'bg-red-100 dark:bg-red-900/30'
@@ -472,10 +535,10 @@ const Transactions = () => {
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{categoryInfo.label}</p>
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <p className="font-medium truncate min-w-0">{categoryInfo.label}</p>
                         {tx.merchant && (
-                          <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-full">
+                          <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-full max-w-[180px] truncate">
                             {tx.merchant}
                           </span>
                         )}
@@ -490,19 +553,19 @@ const Transactions = () => {
                         )}
                       </div>
                       {tx.description && (
-                        <p className="text-sm text-muted-foreground truncate mt-1">{tx.description}</p>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2 wrap-break-word">{tx.description}</p>
                       )}
                     </div>
 
                     {/* Amount */}
-                    <div className="text-right">
+                    <div className="text-right shrink-0 sm:ml-auto">
                       <p className={`text-lg font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                         {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
                       </p>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -525,28 +588,65 @@ const Transactions = () => {
 
               {/* Pagination */}
               {pagination.pages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page === 1}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Previous
-                  </Button>
-                  <span className="text-sm text-muted-foreground px-4">
-                    Page {pagination.page} of {pagination.pages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page === pagination.pages}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
+                <div className="pt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (pagination.page > 1) {
+                              setPagination(prev => ({ ...prev, page: prev.page - 1 }));
+                            }
+                          }}
+                          className={pagination.page === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+
+                      {(() => {
+                        const pages = getPaginationRange(pagination.page, pagination.pages);
+                        return pages.map((p, idx) => {
+                          const prev = pages[idx - 1];
+                          const showEllipsis = idx > 0 && prev && p - prev > 1;
+                          return (
+                            <Fragment key={p}>
+                              {showEllipsis && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+                              <PaginationItem>
+                                <PaginationLink
+                                  href="#"
+                                  isActive={p === pagination.page}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setPagination(prev => ({ ...prev, page: p }));
+                                  }}
+                                >
+                                  {p}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </Fragment>
+                          );
+                        });
+                      })()}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (pagination.page < pagination.pages) {
+                              setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+                            }
+                          }}
+                          className={pagination.page === pagination.pages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
               )}
             </div>
@@ -575,12 +675,63 @@ const Transactions = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Add Transaction</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setShowAddModal(false)}>
+                <Button variant="ghost" size="icon" onClick={() => {
+                  setShowAddModal(false);
+                  setReceiptImages([]);
+                }}>
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Import Bills */}
+              <div className="rounded-lg border bg-muted/20 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Import from bill photos</p>
+                    <p className="text-xs text-muted-foreground">Upload one or more images and we’ll auto-create transactions.</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleImportBills}
+                    disabled={importingBills || !receiptImages.length}
+                  >
+                    {importingBills && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Extract & Add
+                  </Button>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => setReceiptImages(Array.from(e.target.files || []))}
+                  />
+                  {receiptImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {receiptImages.map((file, idx) => (
+                        <div
+                          key={`${file.name}-${idx}`}
+                          className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-xs"
+                        >
+                          <span className="max-w-[220px] truncate">{file.name}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setReceiptImages((prev) => prev.filter((_, i) => i !== idx))}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Type Toggle */}
               <div className="flex rounded-lg overflow-hidden border">
                 <button
@@ -684,7 +835,10 @@ const Transactions = () => {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => {
+                  setShowAddModal(false);
+                  setReceiptImages([]);
+                }}>Cancel</Button>
                 <Button onClick={handleAddTransaction} disabled={saving}>
                   {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Add Transaction

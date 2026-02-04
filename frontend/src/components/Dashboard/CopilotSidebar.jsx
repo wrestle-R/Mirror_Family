@@ -1,7 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
-import { Wallet, PiggyBank, TrendingDown, TrendingUp, Sparkles, MessageSquare, Send, ChevronDown, Loader2 } from "lucide-react";
+import {
+  Wallet,
+  PiggyBank,
+  TrendingDown,
+  TrendingUp,
+  Sparkles,
+  MessageSquare,
+  Send,
+  Loader2,
+  Trash2,
+  PanelRightClose,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,20 +22,87 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-export function CopilotSidebar() {
+const COPILOT_WIDTH_DEFAULT = 380;
+const COPILOT_STORAGE_VERSION = 1;
+
+function getCopilotStorageKey(firebaseUid) {
+  return `moneycouncil:copilot:v${COPILOT_STORAGE_VERSION}:${firebaseUid}`;
+}
+
+function safeJsonParse(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeStoredMessages(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+    .map((m) => ({
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+      isError: !!m.isError,
+    }));
+}
+
+function tryPersistWithEviction(storageKey, nextMessages) {
+  let working = [...nextMessages];
+
+  // Keep bounded even if quota is large
+  const HARD_CAP = 200;
+  if (working.length > HARD_CAP) working = working.slice(working.length - HARD_CAP);
+
+  while (working.length > 0) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(working));
+      return working;
+    } catch {
+      const dropCount = Math.max(1, Math.floor(working.length * 0.1));
+      working = working.slice(dropCount);
+    }
+  }
+
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+export function CopilotSidebar({ open = true, onOpenChange }) {
   const location = useLocation();
   const { user } = useUser();
   const [selectedMode, setSelectedMode] = useState("budget");
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [width, setWidth] = useState(380);
-  const [isResizing, setIsResizing] = useState(false);
   const [modePopoverOpen, setModePopoverOpen] = useState(false);
   const [context, setContext] = useState(null);
   const [loadingContext, setLoadingContext] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
+
+  const storageKey = useMemo(() => {
+    if (!user?.uid) return null;
+    return getCopilotStorageKey(user.uid);
+  }, [user?.uid]);
+
+  const fetchContext = useCallback(async () => {
+    try {
+      setLoadingContext(true);
+      const response = await axios.get(`${API_URL}/api/copilot/context/${user.uid}`);
+      setContext(response.data);
+    } catch (error) {
+      console.error('Error fetching context:', error);
+    } finally {
+      setLoadingContext(false);
+    }
+  }, [user?.uid]);
 
   // Keep selected mode in sync with URL if on agent page
   useEffect(() => {
@@ -41,49 +119,36 @@ export function CopilotSidebar() {
     if (user?.uid) {
       fetchContext();
     }
-  }, [user]);
+  }, [user?.uid, fetchContext]);
 
-  const fetchContext = async () => {
-    try {
-      setLoadingContext(true);
-      const response = await axios.get(`${API_URL}/api/copilot/context/${user.uid}`);
-      setContext(response.data);
-    } catch (error) {
-      console.error('Error fetching context:', error);
-    } finally {
-      setLoadingContext(false);
+  // Load from localStorage when user changes
+  useEffect(() => {
+    if (!storageKey) return;
+    const raw = localStorage.getItem(storageKey);
+    const parsed = safeJsonParse(raw, []);
+    setMessages(normalizeStoredMessages(parsed));
+  }, [storageKey]);
+
+  // Persist on changes (evict old messages if quota exceeded)
+  useEffect(() => {
+    if (!storageKey) return;
+    const serializable = messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp,
+      isError: m.isError,
+    }));
+
+    const persisted = tryPersistWithEviction(storageKey, serializable);
+    if (persisted.length !== serializable.length) {
+      setMessages(normalizeStoredMessages(persisted));
     }
-  };
+  }, [messages, storageKey]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Handle resize
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isResizing) return;
-      const newWidth = window.innerWidth - e.clientX;
-      if (newWidth >= 320 && newWidth <= 600) {
-        setWidth(newWidth);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizing]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isSending) return;
@@ -144,6 +209,21 @@ export function CopilotSidebar() {
     }
   };
 
+  const handleClearHistory = useCallback(() => {
+    if (storageKey) {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // ignore
+      }
+    }
+    setMessages([]);
+  }, [storageKey]);
+
+  const setOpen = useCallback((value) => {
+    onOpenChange?.(value);
+  }, [onOpenChange]);
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -167,20 +247,41 @@ export function CopilotSidebar() {
   return (
     <div 
       ref={sidebarRef}
-      className="hidden xl:flex border-l bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 flex-col fixed right-0 top-0 bottom-0 z-40"
-      style={{ width: `${width}px` }}
+      className={cn(
+        "hidden xl:flex w-[380px] border-l bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 flex-col fixed right-0 top-0 bottom-0 z-40",
+        "transition-transform duration-300 ease-in-out will-change-transform",
+        open ? "translate-x-0" : "translate-x-full pointer-events-none"
+      )}
+      style={{ width: `${COPILOT_WIDTH_DEFAULT}px` }}
+      aria-hidden={!open}
     >
-      {/* Resize Handle */}
-      <div
-        className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-50"
-        onMouseDown={() => setIsResizing(true)}
-      />
-
       {/* Header */}
       <div className="p-4 border-b shrink-0">
-        <div className="flex items-center gap-2 font-semibold mb-1.5">
+        <div className="flex items-center gap-2 font-semibold"> 
           <Sparkles className="w-4 h-4 text-primary fill-primary" />
           <span>Money Copilot</span>
+
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={handleClearHistory}
+              title="Clear chat"
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1" />
+              Clear
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setOpen(false)}
+              title="Close"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -227,7 +328,7 @@ export function CopilotSidebar() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Expenses:</span>
-                      <span className="font-semibold text-red-600">₹{context.profile.totalExpenses?.toLocaleString('en-IN') || 0}</span>
+                      <span className="font-semibold text-red-600">₹{context.thisMonth?.expenses?.toLocaleString('en-IN') || 0}</span>
                     </div>
                     {context.thisMonth && (
                       <>
@@ -408,7 +509,7 @@ export function CopilotSidebar() {
               placeholder={`Ask ${currentMode.label}...`}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               className="flex-1 min-h-[36px] max-h-[120px] resize-none"
               rows={1}
               disabled={isSending}

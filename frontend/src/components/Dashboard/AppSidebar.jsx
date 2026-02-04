@@ -31,6 +31,11 @@ const items = [
     icon: Receipt,
   },
   {
+    title: "Goal Plans",
+    url: "/goals",
+    icon: Target,
+  },
+  {
     title: "Budget Agent",
     url: "/agent/budget",
     icon: Wallet,
