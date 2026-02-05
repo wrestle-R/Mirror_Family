@@ -9,7 +9,10 @@ import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import Transactions from "@/pages/Transactions";
-import AgentPage from "@/pages/AgentPage";
+import BudgetAgent from "@/pages/agents/BudgetAgent";
+import SavingsAgent from "@/pages/agents/SavingsAgent";
+import DebtAgent from "@/pages/agents/DebtAgent";
+import InvestmentAgent from "@/pages/agents/InvestmentAgent";
 import GoalPlans from "@/pages/GoalPlans";
 import Groups from "@/pages/Groups";
 import GroupDetailsPage from "@/pages/GroupDetailsPage";
@@ -43,7 +46,10 @@ function App() {
               <Route path="goals" element={<GoalPlans />} />
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:groupId" element={<GroupDetailsPage />} />
-              <Route path="agent/:type" element={<AgentPage />} />
+              <Route path="agent/budget" element={<BudgetAgent />} />
+              <Route path="agent/savings" element={<SavingsAgent />} />
+              <Route path="agent/debt" element={<DebtAgent />} />
+              <Route path="agent/investment" element={<InvestmentAgent />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
