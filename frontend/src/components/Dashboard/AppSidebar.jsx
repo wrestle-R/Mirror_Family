@@ -1,4 +1,4 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { cn } from "@/lib/utils"
@@ -34,6 +34,11 @@ const items = [
     title: "Goal Plans",
     url: "/goals",
     icon: Target,
+  },
+  {
+    title: "Split",
+    url: "/groups",
+    icon: Users,
   },
   {
     title: "Budget Agent",

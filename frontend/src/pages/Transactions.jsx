@@ -306,7 +306,18 @@ const Transactions = () => {
   };
 
   const getCategoryInfo = (category) => {
-    return ALL_CATEGORIES.find(c => c.value === category) || { label: category, icon: '📦' };
+    const found = ALL_CATEGORIES.find(c => c.value === category);
+    if (found) {
+      const IconComp = found.Icon;
+      return { label: found.label, icon: IconComp ? <IconComp className="w-5 h-5" /> : (found.icon || null) };
+    }
+
+    // Map transfer categories to a proper icon instead of showing an emoji fallback
+    if (category === 'account_transfer') return { label: 'Account Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+    if (category === 'savings_transfer') return { label: 'Savings Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+    if (category === 'other_transfer') return { label: 'Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+
+    return { label: category, icon: null };
   };
 
   const netBalance = (stats.totalIncome || 0) - (stats.totalExpense || 0);
