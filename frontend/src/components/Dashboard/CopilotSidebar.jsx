@@ -19,6 +19,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -446,7 +448,35 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
                       : "bg-muted mr-4"
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {msg.role === 'assistant' ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc ml-5 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal ml-5 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                        a: ({ href, children }) => (
+                          <a href={href} target="_blank" rel="noreferrer" className="underline">
+                            {children}
+                          </a>
+                        ),
+                        code: ({ inline, children }) =>
+                          inline ? (
+                            <code className="px-1 py-0.5 rounded bg-background/50 font-mono text-[0.85em]">{children}</code>
+                          ) : (
+                            <code className="font-mono text-xs">{children}</code>
+                          ),
+                        pre: ({ children }) => (
+                          <pre className="bg-background/50 my-2 p-2 rounded-md overflow-x-auto text-xs">{children}</pre>
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  )}
                 </div>
               ))}
               {isSending && (

@@ -213,7 +213,12 @@ exports.getTransactions = async (req, res) => {
     }
 
     // Build query
-    const query = { student: student._id };
+    // Include:
+    // - Transactions created by the user (student)
+    // - Transfers where the user is the receiver (incoming settlements/transfers)
+    const query = {
+      $or: [{ student: student._id }, { receiver: student._id }]
+    };
 
     if (type) {
       query.type = type;
@@ -230,11 +235,14 @@ exports.getTransactions = async (req, res) => {
     }
 
     if (search) {
-      query.$or = [
-        { description: { $regex: search, $options: 'i' } },
-        { merchant: { $regex: search, $options: 'i' } },
-        { notes: { $regex: search, $options: 'i' } }
-      ];
+      query.$and = query.$and || [];
+      query.$and.push({
+        $or: [
+          { description: { $regex: search, $options: 'i' } },
+          { merchant: { $regex: search, $options: 'i' } },
+          { notes: { $regex: search, $options: 'i' } }
+        ]
+      });
     }
 
     // Sorting
@@ -248,14 +256,34 @@ exports.getTransactions = async (req, res) => {
       Transaction.find(query)
         .sort(sort)
         .skip(skip)
-        .limit(parseInt(limit)),
+        .limit(parseInt(limit))
+        .populate('student', 'name email profilePhoto')
+        .populate('receiver', 'name email profilePhoto')
+        .populate('group', 'name'),
       Transaction.countDocuments(query)
     ]);
+
+    const hydrated = transactions.map((t) => {
+      const obj = t.toObject({ virtuals: true });
+      const studentId = t.student?._id ? t.student._id : t.student;
+      const ownedByMe = studentId && studentId.toString() === student._id.toString();
+
+      // For incoming transfers (receiver matches student), adjust description to be human-readable.
+      if (!ownedByMe && obj.type === 'transfer') {
+        const senderName = obj.student?.name || 'Someone';
+        obj.description = obj.description?.trim()
+          ? obj.description
+          : `Transfer received from ${senderName}`;
+      }
+
+      obj.ownedByMe = ownedByMe;
+      return obj;
+    });
 
     res.status(200).json({
       success: true,
       data: {
-        transactions,
+        transactions: hydrated,
         pagination: {
           total,
           page: parseInt(page),

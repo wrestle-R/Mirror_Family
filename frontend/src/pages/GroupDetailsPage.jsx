@@ -16,11 +16,28 @@ import GroupAnalytics from '@/components/Groups/GroupAnalytics';
 export default function GroupDetailsPage() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const { user, student } = useUser();
+  const { student } = useUser();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const storageKey = groupId ? `moneycouncil:splitTab:${groupId}` : null;
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      if (!groupId) return 'overview';
+      return sessionStorage.getItem(`moneycouncil:splitTab:${groupId}`) || 'overview';
+    } catch {
+      return 'overview';
+    }
+  });
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    try {
+      if (storageKey) sessionStorage.setItem(storageKey, value);
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     if (groupId) {
@@ -106,7 +123,7 @@ export default function GroupDetailsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="gap-2">
             <UsersIcon className="w-4 h-4" />

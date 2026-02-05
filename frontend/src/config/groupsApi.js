@@ -94,9 +94,15 @@ const groupsApi = {
     return response.data;
   },
 
-  // Get group balances
+  // Get group balances (settlements)
   getGroupBalances: async (groupId) => {
     const response = await axios.get(`${API_BASE_URL}/groups/${groupId}/balances`);
+    return response.data;
+  },
+
+  // Get group net balances
+  getGroupNetBalances: async (groupId) => {
+    const response = await axios.get(`${API_BASE_URL}/groups/${groupId}/balances?type=net`);
     return response.data;
   },
 

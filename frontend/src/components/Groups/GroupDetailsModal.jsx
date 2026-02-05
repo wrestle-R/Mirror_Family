@@ -20,6 +20,7 @@ import {
   Users,
   Receipt,
   Scale,
+  History,
 } from 'lucide-react';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ import MemberList from './MemberList';
 import ExpenseList from './ExpenseList';
 import BalanceView from './BalanceView';
 import CreateExpenseModal from './CreateExpenseModal';
+import GroupTransactions from './GroupTransactions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +43,26 @@ import {
 export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate, currentUserId }) {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    try {
+      if (group?._id) sessionStorage.setItem(`moneycouncil:splitTab:${group._id}`, value);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    try {
+      if (!open || !group?._id) return;
+      const stored = sessionStorage.getItem(`moneycouncil:splitTab:${group._id}`);
+      if (stored) setActiveTab(stored);
+    } catch {
+      // ignore
+    }
+  }, [open, group?._id]);
+
   const [expenses, setExpenses] = useState([]);
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -161,8 +183,8 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
             </div>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="members">
                 <Users className="w-4 h-4 mr-2" />
@@ -171,6 +193,10 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
               <TabsTrigger value="expenses">
                 <Receipt className="w-4 h-4 mr-2" />
                 Expenses
+              </TabsTrigger>
+              <TabsTrigger value="transactions">
+                <History className="w-4 h-4 mr-2" />
+                History
               </TabsTrigger>
               <TabsTrigger value="balances">
                 <Scale className="w-4 h-4 mr-2" />
@@ -254,6 +280,10 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
                     onExpenseDeleted={handleExpenseDeleted}
                   />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="transactions" className="m-0">
+                <GroupTransactions groupId={group._id} refreshKey={activeTab} />
               </TabsContent>
 
               <TabsContent value="balances" className="m-0">

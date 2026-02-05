@@ -322,6 +322,27 @@ const Transactions = () => {
 
   const netBalance = (stats.totalIncome || 0) - (stats.totalExpense || 0);
 
+  const getDisplayAmount = (tx) => {
+    const amount = Number(tx.amount || 0);
+    if (tx.type === 'income') {
+      return { sign: '+', className: 'text-green-600', value: amount };
+    }
+    if (tx.type === 'expense') {
+      return { sign: '-', className: 'text-red-600', value: amount };
+    }
+    if (tx.type === 'transfer') {
+      // Incoming transfers are marked by backend as ownedByMe=false
+      const incoming = tx.ownedByMe === false;
+      return {
+        sign: incoming ? '+' : '-',
+        className: incoming ? 'text-green-600' : 'text-red-600',
+        value: amount,
+      };
+    }
+    // investment or other: neutral
+    return { sign: '', className: 'text-blue-600', value: amount };
+  };
+
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
       {/* Header */}
@@ -570,28 +591,37 @@ const Transactions = () => {
 
                     {/* Amount */}
                     <div className="text-right shrink-0 sm:ml-auto">
-                      <p className={`text-lg font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                      </p>
+                      {(() => {
+                        const d = getDisplayAmount(tx);
+                        return (
+                          <p className={`text-lg font-bold ${d.className}`}>
+                            {d.sign}₹{d.value.toLocaleString()}
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingTransaction({...tx, date: new Date(tx.date)})}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteConfirm(tx._id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {tx.ownedByMe !== false && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingTransaction({ ...tx, date: new Date(tx.date) })}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(tx._id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

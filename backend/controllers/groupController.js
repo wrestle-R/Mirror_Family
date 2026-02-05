@@ -667,12 +667,18 @@ exports.deleteExpense = async (req, res) => {
 exports.getGroupBalances = async (req, res) => {
   try {
     const { groupId } = req.params;
+    const { type } = req.query;
 
-    const settlements = await GroupExpense.getSimplifiedSettlements(groupId);
+    let data;
+    if (type === 'net') {
+      data = await GroupExpense.calculateGroupBalances(groupId);
+    } else {
+      data = await GroupExpense.getSimplifiedSettlements(groupId);
+    }
 
     res.status(200).json({
       success: true,
-      data: settlements
+      data: data
     });
   } catch (error) {
     console.error('Error calculating balances:', error);
@@ -1018,37 +1024,63 @@ exports.getGroupAnalytics = async (req, res) => {
   }
 };
 
-// Get all transactions for a group (including settlements)
+// Get all transactions for a group (including settlements) - Merged View
 exports.getGroupTransactions = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { page = 1, limit = 50, sortBy = 'date', sortOrder = 'desc' } = req.query;
+    const { page = 1, limit = 50 } = req.query;
 
-    const query = { group: groupId };
+    // 1. Fetch Group Expenses (Source of truth for expenses)
+    const expensesPromise = GroupExpense.find({ group: groupId })
+      .populate('paidBy', 'name email profilePhoto')
+      .lean();
 
-    const sort = {};
-    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    // 2. Fetch Settlement Transactions (Source of truth for settlements)
+    const settlementsPromise = Transaction.find({ 
+      group: groupId, 
+      type: 'transfer' 
+    })
+    .populate('student', 'name email profilePhoto')
+    .populate('receiver', 'name email profilePhoto')
+    .lean();
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const [expenses, settlements] = await Promise.all([expensesPromise, settlementsPromise]);
 
-    const [transactions, total] = await Promise.all([
-      Transaction.find(query)
-        .sort(sort)
-        .skip(skip)
-        .limit(parseInt(limit))
-        .populate('student', 'name email profilePhoto'),
-      Transaction.countDocuments(query)
-    ]);
+    // 3. Normalize expenses to match Transaction interface
+    const normalizedExpenses = expenses.map(exp => ({
+      _id: exp._id,
+      type: 'expense',
+      amount: exp.amount,
+      description: exp.description,
+      category: exp.category,
+      date: exp.date,
+      student: exp.paidBy, // Map paidBy to student to match Transaction schema
+      group: exp.group,
+      isGroupExpense: true
+    }));
+
+    // 4. Combine and Sort
+    const allItems = [...normalizedExpenses, ...settlements].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date); // Descending
+    });
+
+    // 5. Pagination
+    const total = allItems.length;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    const paginatedItems = allItems.slice(startIndex, endIndex);
 
     res.status(200).json({
       success: true,
       data: {
-        transactions,
+        transactions: paginatedItems,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          pages: Math.ceil(total / parseInt(limit))
+          page: pageNum,
+          limit: limitNum,
+          pages: Math.ceil(total / limitNum)
         }
       }
     });

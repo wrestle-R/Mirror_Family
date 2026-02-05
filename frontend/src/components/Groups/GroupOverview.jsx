@@ -23,7 +23,7 @@ export default function GroupOverview({ group, isOwner, currentUserId, onUpdate,
       setLoading(true);
       const [expResponse, balResponse] = await Promise.all([
         groupsApi.getGroupExpenses(group._id),
-        groupsApi.getGroupBalances(group._id)
+        groupsApi.getGroupNetBalances(group._id)
       ]);
 
       if (expResponse.success) setExpenses(expResponse.data);
