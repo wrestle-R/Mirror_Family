@@ -9,6 +9,17 @@ import { toast } from 'sonner';
 import GroupCard from '@/components/Groups/GroupCard';
 import CreateGroupModal from '@/components/Groups/CreateGroupModal';
 import JoinGroupModal from '@/components/Groups/JoinGroupModal';
+import EditGroupModal from '@/components/Groups/EditGroupModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -17,6 +28,9 @@ export default function Groups() {
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   useEffect(() => {
     if (user?.uid) {
@@ -51,6 +65,32 @@ export default function Groups() {
   const handleJoinSuccess = () => {
     fetchGroups();
     setJoinModalOpen(false);
+  };
+
+  const handleEdit = (group) => {
+    setSelectedGroup(group);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (group) => {
+    setSelectedGroup(group);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedGroup) return;
+    try {
+      const response = await groupsApi.deleteGroup(selectedGroup._id, user.uid);
+      if (response.success) {
+        toast.success('Group deleted successfully');
+        fetchGroups();
+      }
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast.error('Failed to delete group');
+    } finally {
+      setDeleteDialogOpen(false);
+    }
   };
 
   if (loading) {
@@ -115,7 +155,9 @@ export default function Groups() {
               key={group._id}
               group={group}
               onClick={() => handleGroupClick(group)}
-              currentUserId={student?._id}
+              currentUserId={student?._id || student?.id}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -133,6 +175,33 @@ export default function Groups() {
         onOpenChange={setJoinModalOpen}
         onSuccess={handleJoinSuccess}
       />
+
+      <EditGroupModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        group={selectedGroup}
+        onSuccess={fetchGroups}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedGroup?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

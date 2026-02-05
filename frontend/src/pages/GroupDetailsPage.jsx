@@ -83,7 +83,9 @@ export default function GroupDetailsPage() {
     return null;
   }
 
-  const isOwner = group.owner._id === student?._id;
+  const ownerId = typeof group?.owner === 'object' ? group.owner._id : group?.owner;
+  const studentId = student?._id || student?.id;
+  const isOwner = ownerId && studentId && ownerId.toString() === studentId.toString();
 
   return (
     <div className="space-y-6">
@@ -151,7 +153,7 @@ export default function GroupDetailsPage() {
           <GroupOverview
             group={group}
             isOwner={isOwner}
-            currentUserId={student?._id}
+            currentUserId={student?._id || student?.id}
             onUpdate={handleUpdate}
             refreshKey={refreshKey}
           />
@@ -161,7 +163,7 @@ export default function GroupDetailsPage() {
           <GroupExpenses
             groupId={groupId}
             group={group}
-            currentUserId={student?._id}
+            currentUserId={student?._id || student?.id}
             onUpdate={handleUpdate}
             refreshKey={refreshKey}
           />
@@ -171,7 +173,7 @@ export default function GroupDetailsPage() {
           <GroupSettlements
             groupId={groupId}
             group={group}
-            currentUserId={student?._id}
+            currentUserId={student?._id || student?.id}
             onUpdate={handleUpdate}
             refreshKey={refreshKey}
           />

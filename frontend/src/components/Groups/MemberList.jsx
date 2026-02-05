@@ -55,7 +55,7 @@ export default function MemberList({ group, balances, currentUserId, isOwner, on
     <div className="space-y-3">
       {allMembers.map((member) => {
         const isMemberOwner = member._id === group.owner._id;
-        const isCurrentUser = member._id === currentUserId;
+        const isCurrentUser = member._id?.toString() === currentUserId?.toString();
         
         // Find net balance from synchronized backend data
         const memberBalanceEntry = balances.find(b => b.userId === member._id);

@@ -1,10 +1,18 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Crown, TrendingUp } from 'lucide-react';
+import { Users, Crown, TrendingUp, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
-export default function GroupCard({ group, onClick, currentUserId }) {
-  const isOwner = group.owner._id === currentUserId;
+export default function GroupCard({ group, onClick, currentUserId, onEdit, onDelete }) {
+  const ownerId = typeof group.owner === 'object' ? group.owner._id : group.owner;
+  const isOwner = ownerId && currentUserId && ownerId.toString() === currentUserId.toString();
   const totalMembers = (group.members?.length || 0) + 1; // +1 for owner
   const totalExpenses = group.stats?.totalExpenses || 0;
   const expenseCount = group.stats?.expenseCount || 0;
@@ -34,10 +42,32 @@ export default function GroupCard({ group, onClick, currentUserId }) {
             </div>
           </div>
           {isOwner && (
-            <Badge variant="secondary" className="gap-1">
-              <Crown className="w-3 h-3" />
-              Owner
-            </Badge>
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <Badge variant="secondary" className="gap-1 px-2 h-7">
+                <Crown className="w-3 h-3" />
+                Owner
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => onEdit(group)} className="cursor-pointer">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Group
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => onDelete(group)}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Group
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </div>
 

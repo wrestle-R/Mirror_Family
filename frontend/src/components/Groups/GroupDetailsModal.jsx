@@ -28,6 +28,7 @@ import MemberList from './MemberList';
 import ExpenseList from './ExpenseList';
 import BalanceView from './BalanceView';
 import CreateExpenseModal from './CreateExpenseModal';
+import EditGroupModal from './EditGroupModal';
 import GroupTransactions from './GroupTransactions';
 import {
   AlertDialog,
@@ -67,9 +68,11 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+  const [editGroupModalOpen, setEditGroupModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const isOwner = group?.owner?._id === currentUserId;
+  const ownerId = typeof group?.owner === 'object' ? group.owner._id : group?.owner;
+  const isOwner = ownerId && currentUserId && ownerId.toString() === currentUserId.toString();
   const allMembers = group ? [group.owner, ...(group.members || [])] : [];
 
   useEffect(() => {
@@ -237,14 +240,24 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
 
                 <div className="flex gap-2">
                   {isOwner ? (
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => setDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Group
-                    </Button>
+                    <>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Group
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setEditGroupModalOpen(true)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Group Details
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       variant="destructive"
@@ -300,6 +313,13 @@ export default function GroupDetailsModal({ open, onOpenChange, group, onUpdate,
         group={group}
         members={allMembers}
         onSuccess={handleExpenseCreated}
+      />
+
+      <EditGroupModal 
+        open={editGroupModalOpen}
+        onOpenChange={setEditGroupModalOpen}
+        group={group}
+        onSuccess={onUpdate}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

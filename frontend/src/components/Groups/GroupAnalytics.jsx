@@ -152,6 +152,10 @@ export default function GroupAnalytics({ groupId, group, refreshKey }) {
   const gridColor = theme === 'dark' ? '#374151' : '#f3f4f6';
   const allMembers = [group.owner, ...(group.members || [])];
   const allCategories = [...new Set(expenses.map(exp => exp.category))];
+  // Avoid mutating memoized stats arrays (sort is in-place)
+  const topSpenderName = stats
+    ? ([...stats.expenseByMember].sort((a, b) => b.totalPaid - a.totalPaid)[0]?.name || 'N/A')
+    : 'N/A';
 
   return (
     <div className="space-y-6 pb-12">
@@ -279,7 +283,7 @@ export default function GroupAnalytics({ groupId, group, refreshKey }) {
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1 uppercase tracking-wider">Top Spender</h3>
               <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 truncate">
-                {stats.expenseByMember.sort((a,b) => b.totalPaid - a.totalPaid)[0]?.name || 'N/A'}
+                {topSpenderName}
               </p>
               <p className="text-xs text-muted-foreground mt-2">Active in this view</p>
             </Card>
