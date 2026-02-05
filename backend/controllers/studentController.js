@@ -8,10 +8,10 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // Get current student profile
 exports.getProfile = async (req, res) => {
   try {
-    const { firebaseUid } = req.params; 
-    
+    const { firebaseUid } = req.params;
+
     if (!firebaseUid) {
-        return res.status(400).json({ message: "Firebase UID is required" });
+      return res.status(400).json({ message: "Firebase UID is required" });
     }
 
     // Find student first
@@ -22,11 +22,11 @@ exports.getProfile = async (req, res) => {
 
     // Find profile
     let profile = await StudentProfile.findOne({ student: student._id });
-    
+
     // If no profile exists, create a default one
     if (!profile) {
-        profile = new StudentProfile({ student: student._id });
-        await profile.save();
+      profile = new StudentProfile({ student: student._id });
+      await profile.save();
     }
 
     res.status(200).json({ success: true, data: { student, profile } });
@@ -42,7 +42,7 @@ exports.updateProfile = async (req, res) => {
     const { firebaseUid, name, contactNumber, dateOfBirth, education, parentContact, monthlyIncome, incomeSource, monthlyBudget, rentExpense, foodExpense, transportationExpense, utilitiesExpense, otherExpenses, currentSavings, savingsGoal, investmentsAmount, investmentType, totalDebt, debtDetails, debtPaymentMonthly, shortTermGoals, longTermGoals, shortTermGoalsText, longTermGoalsText, financialCondition, financialLiteracy, riskTolerance, preferredCommunication } = req.body;
 
     if (!firebaseUid) {
-        return res.status(400).json({ message: "Firebase UID is required" });
+      return res.status(400).json({ message: "Firebase UID is required" });
     }
 
     const student = await Student.findOne({ firebaseUid });
@@ -225,10 +225,10 @@ exports.toggleGoalCompletion = async (req, res) => {
 
     await profile.save();
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: goalArray[goalIndex].isCompleted ? 'Goal marked as complete' : 'Goal marked as incomplete',
-      data: { profile } 
+      data: { profile }
     });
   } catch (error) {
     console.error('Error toggling goal completion:', error);
@@ -317,6 +317,160 @@ exports.getGoals = async (req, res) => {
   }
 };
 
+// --- DEBT ENDPOINTS ---
+
+// Add a debt
+exports.addDebt = async (req, res) => {
+  try {
+    const { firebaseUid, debt } = req.body;
+
+    if (!firebaseUid || !debt) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and debt data are required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    let profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      profile = new StudentProfile({ student: student._id });
+    }
+
+    const newDebt = {
+      id: debt.id || `debt_${Date.now()}`,
+      name: debt.name,
+      balance: Number(debt.balance) || 0,
+      interestRate: Number(debt.interestRate) || 0.12,
+      minPayment: Number(debt.minPayment) || 0,
+      category: debt.category || 'other',
+      createdAt: new Date()
+    };
+
+    profile.debts.push(newDebt);
+
+    // Auto-update legacy totalDebt field
+    profile.totalDebt = profile.debts.reduce((sum, d) => sum + d.balance, 0);
+
+    await profile.save();
+
+    res.status(201).json({ success: true, message: 'Debt added successfully', data: { profile } });
+  } catch (error) {
+    console.error('Error adding debt:', error);
+    res.status(500).json({ success: false, message: 'Server error adding debt' });
+  }
+};
+
+// Update a debt
+exports.updateDebt = async (req, res) => {
+  try {
+    const { firebaseUid, debtId, updates } = req.body;
+
+    if (!firebaseUid || !debtId) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and debt ID are required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    const debtIndex = profile.debts.findIndex(d => d.id === debtId);
+    if (debtIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Debt not found' });
+    }
+
+    // Update fields
+    if (updates.name !== undefined) profile.debts[debtIndex].name = updates.name;
+    if (updates.balance !== undefined) profile.debts[debtIndex].balance = Number(updates.balance);
+    if (updates.interestRate !== undefined) profile.debts[debtIndex].interestRate = Number(updates.interestRate);
+    if (updates.minPayment !== undefined) profile.debts[debtIndex].minPayment = Number(updates.minPayment);
+    if (updates.category !== undefined) profile.debts[debtIndex].category = updates.category;
+
+    // Auto-update legacy totalDebt field
+    profile.totalDebt = profile.debts.reduce((sum, d) => sum + d.balance, 0);
+
+    await profile.save();
+
+    res.status(200).json({ success: true, message: 'Debt updated successfully', data: { profile } });
+  } catch (error) {
+    console.error('Error updating debt:', error);
+    res.status(500).json({ success: false, message: 'Server error updating debt' });
+  }
+};
+
+// Delete a debt
+exports.deleteDebt = async (req, res) => {
+  try {
+    const { firebaseUid, debtId } = req.body;
+
+    if (!firebaseUid || !debtId) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and debt ID are required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    profile.debts = profile.debts.filter(d => d.id !== debtId);
+
+    // Auto-update legacy totalDebt field
+    profile.totalDebt = profile.debts.reduce((sum, d) => sum + d.balance, 0);
+
+    await profile.save();
+
+    res.status(200).json({ success: true, message: 'Debt deleted successfully', data: { profile } });
+  } catch (error) {
+    console.error('Error deleting debt:', error);
+    res.status(500).json({ success: false, message: 'Server error deleting debt' });
+  }
+};
+
+// Get all debts
+exports.getDebts = async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ success: false, message: 'Firebase UID is required' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const profile = await StudentProfile.findOne({ student: student._id });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        debts: profile.debts,
+        totalDebt: profile.totalDebt,
+        debtPaymentMonthly: profile.debtPaymentMonthly
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching debts:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching debts' });
+  }
+};
+
 // Record monthly income as a transaction
 exports.recordMonthlyIncome = async (req, res) => {
   try {
@@ -371,8 +525,8 @@ exports.recordMonthlyIncome = async (req, res) => {
     });
 
     if (existingTransaction) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: 'Monthly income already recorded for this month',
         transaction: existingTransaction
       });
