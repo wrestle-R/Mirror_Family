@@ -7,6 +7,20 @@ const transactionSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  // Optional reference to a Group (for group-related transactions like settlements)
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    default: null,
+    index: true
+  },
+  // Recipient of the transaction (for transfers/settlements)
+  receiver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student',
+    default: null,
+    index: true
+  },
   // Transaction Type
   type: {
     type: String,

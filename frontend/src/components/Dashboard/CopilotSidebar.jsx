@@ -19,6 +19,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -58,7 +60,7 @@ function tryPersistWithEviction(storageKey, nextMessages) {
 
   while (working.length > 0) {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(working));
+      sessionStorage.setItem(storageKey, JSON.stringify(working));
       return working;
     } catch {
       const dropCount = Math.max(1, Math.floor(working.length * 0.1));
@@ -67,7 +69,7 @@ function tryPersistWithEviction(storageKey, nextMessages) {
   }
 
   try {
-    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
   } catch {
     // ignore
   }
@@ -84,6 +86,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
   const [context, setContext] = useState(null);
   const [loadingContext, setLoadingContext] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
 
@@ -121,17 +124,27 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
     }
   }, [user?.uid, fetchContext]);
 
-  // Load from localStorage when user changes
+  // Load from sessionStorage when user changes
   useEffect(() => {
     if (!storageKey) return;
-    const raw = localStorage.getItem(storageKey);
-    const parsed = safeJsonParse(raw, []);
-    setMessages(normalizeStoredMessages(parsed));
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = safeJsonParse(raw, []);
+        if (parsed.length > 0) {
+          setMessages(normalizeStoredMessages(parsed));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load chat history", e);
+    } finally {
+      setHasLoaded(true);
+    }
   }, [storageKey]);
 
   // Persist on changes (evict old messages if quota exceeded)
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey || !hasLoaded) return;
     const serializable = messages.map((m) => ({
       role: m.role,
       content: m.content,
@@ -143,7 +156,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
     if (persisted.length !== serializable.length) {
       setMessages(normalizeStoredMessages(persisted));
     }
-  }, [messages, storageKey]);
+  }, [messages, storageKey, hasLoaded]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -212,7 +225,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
   const handleClearHistory = useCallback(() => {
     if (storageKey) {
       try {
-        localStorage.removeItem(storageKey);
+        sessionStorage.removeItem(storageKey);
       } catch {
         // ignore
       }
@@ -248,13 +261,15 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
     <div 
       ref={sidebarRef}
       className={cn(
-        "hidden xl:flex w-[380px] border-l bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 flex-col fixed right-0 top-0 bottom-0 z-40",
+        "hidden xl:flex border-l bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 fixed right-0 top-0 bottom-0 z-40",
         "transition-transform duration-300 ease-in-out will-change-transform",
         open ? "translate-x-0" : "translate-x-full pointer-events-none"
       )}
       style={{ width: `${COPILOT_WIDTH_DEFAULT}px` }}
       aria-hidden={!open}
     >
+      {/* Wrapper to enforce flex column layout */}
+      <div className="flex flex-col h-full w-full overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b shrink-0">
         <div className="flex items-center gap-2 font-semibold"> 
@@ -302,8 +317,9 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <div className="flex-1 overflow-hidden min-h-0">
+        <ScrollArea className="h-full p-4">
+          <div className="space-y-4">
           {messages.length === 0 ? (
             <>
               <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-2">
@@ -446,7 +462,35 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
                       : "bg-muted mr-4"
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {msg.role === 'assistant' ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc ml-5 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal ml-5 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                        a: ({ href, children }) => (
+                          <a href={href} target="_blank" rel="noreferrer" className="underline">
+                            {children}
+                          </a>
+                        ),
+                        code: ({ inline, children }) =>
+                          inline ? (
+                            <code className="px-1 py-0.5 rounded bg-background/50 font-mono text-[0.85em]">{children}</code>
+                          ) : (
+                            <code className="font-mono text-xs">{children}</code>
+                          ),
+                        pre: ({ children }) => (
+                          <pre className="bg-background/50 my-2 p-2 rounded-md overflow-x-auto text-xs">{children}</pre>
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  )}
                 </div>
               ))}
               {isSending && (
@@ -458,11 +502,12 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
               <div ref={messagesEndRef} />
             </div>
           )}
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+      </div>
       
-      {/* Input Area */}
-      <div className="border-t shrink-0">
+      {/* Input Area - Fixed at bottom */}
+      <div className="border-t flex-shrink-0 bg-background">
         <div className="p-3 space-y-2">
           <div className="flex gap-2 items-end">
             {/* Mode Selector Popover */}
@@ -524,10 +569,11 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
               {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
-          <p className="text-[10px] text-center text-muted-foreground">
+          <p className="text-[10px] text-center text-muted-foreground pb-2">
             • Powered by Groq Llama 3.1
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

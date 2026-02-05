@@ -306,10 +306,42 @@ const Transactions = () => {
   };
 
   const getCategoryInfo = (category) => {
-    return ALL_CATEGORIES.find(c => c.value === category) || { label: category, icon: '📦' };
+    const found = ALL_CATEGORIES.find(c => c.value === category);
+    if (found) {
+      const IconComp = found.Icon;
+      return { label: found.label, icon: IconComp ? <IconComp className="w-5 h-5" /> : (found.icon || null) };
+    }
+
+    // Map transfer categories to a proper icon instead of showing an emoji fallback
+    if (category === 'account_transfer') return { label: 'Account Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+    if (category === 'savings_transfer') return { label: 'Savings Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+    if (category === 'other_transfer') return { label: 'Transfer', icon: <ArrowLeftRight className="w-5 h-5" /> };
+
+    return { label: category, icon: null };
   };
 
   const netBalance = (stats.totalIncome || 0) - (stats.totalExpense || 0);
+
+  const getDisplayAmount = (tx) => {
+    const amount = Number(tx.amount || 0);
+    if (tx.type === 'income') {
+      return { sign: '+', className: 'text-green-600', value: amount };
+    }
+    if (tx.type === 'expense') {
+      return { sign: '-', className: 'text-red-600', value: amount };
+    }
+    if (tx.type === 'transfer') {
+      // Incoming transfers are marked by backend as ownedByMe=false
+      const incoming = tx.ownedByMe === false;
+      return {
+        sign: incoming ? '+' : '-',
+        className: incoming ? 'text-green-600' : 'text-red-600',
+        value: amount,
+      };
+    }
+    // investment or other: neutral
+    return { sign: '', className: 'text-blue-600', value: amount };
+  };
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
@@ -540,6 +572,11 @@ const Transactions = () => {
                             {tx.merchant}
                           </span>
                         )}
+                        {tx.group && (
+                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-full font-medium inline-flex items-center gap-1 max-w-[150px]">
+                            <span className="truncate">Group: {tx.group.name}</span>
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
@@ -557,28 +594,37 @@ const Transactions = () => {
 
                     {/* Amount */}
                     <div className="text-right shrink-0 sm:ml-auto">
-                      <p className={`text-lg font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                      </p>
+                      {(() => {
+                        const d = getDisplayAmount(tx);
+                        return (
+                          <p className={`text-lg font-bold ${d.className}`}>
+                            {d.sign}₹{d.value.toLocaleString()}
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingTransaction({...tx, date: new Date(tx.date)})}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteConfirm(tx._id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {tx.ownedByMe !== false && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingTransaction({ ...tx, date: new Date(tx.date) })}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(tx._id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

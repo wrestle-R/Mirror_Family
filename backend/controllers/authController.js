@@ -19,9 +19,10 @@ const createOrUpdateStudent = async (req, res) => {
 
     if (student) {
       student.email = email;
-      student.name = name || student.name;
       student.profilePhoto = profilePhoto || student.profilePhoto;
       student.contactNumber = contactNumber || student.contactNumber;
+      // We don't overwrite name here to prevent reverting user changes
+      // Name updates should happen via the profile update endpoint
       await student.save();
       console.log('Student updated:', student._id);
     } else {
