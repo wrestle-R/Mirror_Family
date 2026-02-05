@@ -593,7 +593,7 @@ const Transactions = () => {
                     </div>
 
                     {/* Amount */}
-                    <div className="text-right shrink-0 sm:ml-auto">
+                    <div className="text-right shrink-0 sm:ml-auto w-32">
                       {(() => {
                         const d = getDisplayAmount(tx);
                         return (
@@ -605,7 +605,7 @@ const Transactions = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity w-20 justify-end">
                       {tx.ownedByMe !== false && (
                         <>
                           <Button
