@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const goalSchema = require('./GoalSchema');
+const debtSchema = require('./DebtSchema');
 
 const studentProfileSchema = new mongoose.Schema({
   student: {
@@ -89,6 +90,8 @@ const studentProfileSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Individual Debts tracking
+  debts: [debtSchema],
   // Goals - Now as arrays with individual tracking
   shortTermGoals: [goalSchema],
   longTermGoals: [goalSchema],
@@ -131,17 +134,17 @@ const studentProfileSchema = new mongoose.Schema({
 });
 
 // Method to get active (non-completed) short-term goals
-studentProfileSchema.methods.getActiveShortTermGoals = function() {
+studentProfileSchema.methods.getActiveShortTermGoals = function () {
   return this.shortTermGoals.filter(goal => !goal.isCompleted);
 };
 
 // Method to get active (non-completed) long-term goals
-studentProfileSchema.methods.getActiveLongTermGoals = function() {
+studentProfileSchema.methods.getActiveLongTermGoals = function () {
   return this.longTermGoals.filter(goal => !goal.isCompleted);
 };
 
 // Method to get completed goals
-studentProfileSchema.methods.getCompletedGoals = function() {
+studentProfileSchema.methods.getCompletedGoals = function () {
   return {
     shortTerm: this.shortTermGoals.filter(goal => goal.isCompleted),
     longTerm: this.longTermGoals.filter(goal => goal.isCompleted)
@@ -149,18 +152,18 @@ studentProfileSchema.methods.getCompletedGoals = function() {
 };
 
 // Method to calculate total expenses
-studentProfileSchema.methods.getTotalExpenses = function() {
-  return this.rentExpense + this.foodExpense + this.transportationExpense + 
-         this.utilitiesExpense + this.otherExpenses;
+studentProfileSchema.methods.getTotalExpenses = function () {
+  return this.rentExpense + this.foodExpense + this.transportationExpense +
+    this.utilitiesExpense + this.otherExpenses;
 };
 
 // Method to calculate net savings potential
-studentProfileSchema.methods.getNetSavingsPotential = function() {
+studentProfileSchema.methods.getNetSavingsPotential = function () {
   return this.monthlyIncome - this.getTotalExpenses() - this.debtPaymentMonthly;
 };
 
 // Virtual for profile completion percentage
-studentProfileSchema.virtual('profileCompletion').get(function() {
+studentProfileSchema.virtual('profileCompletion').get(function () {
   const fields = [
     this.education,
     this.monthlyIncome,

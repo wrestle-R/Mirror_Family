@@ -19,4 +19,10 @@ router.put('/goals', studentController.updateGoal);
 router.post('/goals/toggle', studentController.toggleGoalCompletion);
 router.delete('/goals', studentController.deleteGoal);
 
+// Debt routes
+router.get('/debts/:firebaseUid', studentController.getDebts);
+router.post('/debts', studentController.addDebt);
+router.put('/debts', studentController.updateDebt);
+router.delete('/debts', studentController.deleteDebt);
+
 module.exports = router;
