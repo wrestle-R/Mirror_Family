@@ -67,13 +67,25 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
       setLoading(true);
 
       const amount = parseFloat(formData.amount);
-      const splitAmount = amount / selectedMembers.length;
-
-      const splits = selectedMembers.map((memberId) => ({
-        member: memberId,
-        amount: Math.round(splitAmount * 100) / 100,
-        settled: false,
-      }));
+      const splitAmount = Math.floor((amount / selectedMembers.length) * 100) / 100;
+      
+      // Calculate splits with proper rounding
+      const splits = selectedMembers.map((memberId, index) => {
+        // Last member gets the remainder to ensure exact total
+        if (index === selectedMembers.length - 1) {
+          const previousTotal = splitAmount * (selectedMembers.length - 1);
+          return {
+            member: memberId,
+            amount: Math.round((amount - previousTotal) * 100) / 100,
+            settled: false,
+          };
+        }
+        return {
+          member: memberId,
+          amount: splitAmount,
+          settled: false,
+        };
+      });
 
       const expenseData = {
         firebaseUid: user.uid,
@@ -102,7 +114,8 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
       }
     } catch (error) {
       console.error('Error creating expense:', error);
-      toast.error(error.response?.data?.message || 'Failed to create expense');
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to create expense';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -116,7 +129,7 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
     );
   };
 
-  const splitAmount = formData.amount
+  const splitAmount = formData.amount && selectedMembers.length > 0
     ? (parseFloat(formData.amount) / selectedMembers.length).toFixed(2)
     : '0.00';
 

@@ -469,12 +469,14 @@ exports.createExpense = async (req, res) => {
 
     // Create transaction entry for the expense
     try {
+      const transactionCategory = (!category || category === 'other') ? 'other_expense' : category;
+      
       const transaction = new Transaction({
         student: student._id,
         group: groupId,
         type: 'expense',
         amount: amount,
-        category: category || 'other_expense',
+        category: transactionCategory,
         description: description,
         date: date || new Date(),
         paymentMethod: 'other',
@@ -577,9 +579,11 @@ exports.updateExpense = async (req, res) => {
     // Update associated transaction
     if (expense.transactionId) {
       try {
+        const transactionCategory = (!expense.category || expense.category === 'other') ? 'other_expense' : expense.category;
+
         await Transaction.findByIdAndUpdate(expense.transactionId, {
           amount: expense.amount,
-          category: expense.category,
+          category: transactionCategory,
           description: expense.description,
           date: expense.date,
           notes: `Group expense in "${expense.description}"${expense.notes ? ` - ${expense.notes}` : ''}`

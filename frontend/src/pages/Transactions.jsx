@@ -574,6 +574,11 @@ const Transactions = () => {
                             {tx.merchant}
                           </span>
                         )}
+                        {tx.group && (
+                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-full font-medium inline-flex items-center gap-1 max-w-[150px]">
+                            <span className="truncate">Group: {tx.group.name}</span>
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
