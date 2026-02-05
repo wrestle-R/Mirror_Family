@@ -253,7 +253,7 @@ const VoiceOnboarding = ({ open, onOpenChange, onProfileUpdate }) => {
       <DialogContent className="sm:max-w-[700px] p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl border-none shadow-2xl ring-1 ring-white/10">
 
         {/* Header Section */}
-        <div className="p-6 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b">
+        <div className="p-6 bg-linear-to-r from-primary/10 via-primary/5 to-transparent border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary animate-pulse" />
@@ -339,7 +339,7 @@ const VoiceOnboarding = ({ open, onOpenChange, onProfileUpdate }) => {
               {/* Input Area */}
               <div className="relative group">
                 <div className={cn(
-                  "absolute -inset-0.5 rounded-xl bg-gradient-to-r from-primary to-purple-500 opacity-0 transition duration-500 blur user-select-none",
+                  "absolute -inset-0.5 rounded-xl bg-linear-to-r from-primary to-purple-500 opacity-0 transition duration-500 blur user-select-none",
                   isListening && "opacity-20 group-hover:opacity-30 animate-pulse"
                 )} />
 
@@ -413,7 +413,7 @@ const VoiceOnboarding = ({ open, onOpenChange, onProfileUpdate }) => {
                 </span>
               )}
               {currentStep === ONBOARDING_QUESTIONS.length - 1 ? (
-                <Button onClick={handleFinish} disabled={isProcessing} className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg shadow-primary/20">
+                <Button onClick={handleFinish} disabled={isProcessing} className="bg-linear-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg shadow-primary/20">
                   {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                   Complete Profile
                 </Button>

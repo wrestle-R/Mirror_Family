@@ -350,9 +350,7 @@ const Transactions = () => {
                     <p className="text-2xl font-bold text-red-600">
                       {(() => {
                         const fromStats = stats?.totalExpense;
-                        const fallback = transactions.reduce((sum, t) => sum + (t.type === 'expense' ? Number(t.amount || 0) : 0), 0);
-                        const display = typeof fromStats === 'number' && !Number.isNaN(fromStats) ? fromStats : fallback;
-                        return `₹${(display || 0).toLocaleString()}`;
+                        return `₹${(fromStats).toLocaleString()}`;
                       })()}
                     </p>
             </div>

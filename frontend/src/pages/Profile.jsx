@@ -531,7 +531,7 @@ const Profile = () => {
           {/* Header */}
           <div className="mb-8 flex items-start justify-between">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/70">
+              <h1 className="text-4xl font-bold tracking-tight">
                 Student Financial Profile
               </h1>
               <p className="text-muted-foreground mt-2">
@@ -540,7 +540,7 @@ const Profile = () => {
             </div>
             <Button 
               onClick={() => setShowVoiceOnboarding(true)}
-              className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              className="gap-2 bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
             >
               <Mic className="w-4 h-4" />
               Fill Quicker
@@ -548,7 +548,7 @@ const Profile = () => {
           </div>
 
           {/* Progress Bar with Last Saved */}
-          <Card className="mb-8 border-l-4 border-l-primary bg-linear-to-r from-primary/5 to-transparent">
+          <Card className="mb-8 border-l-4 border-l-primary bg-card">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div>

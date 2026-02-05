@@ -237,8 +237,8 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/5 via-transparent to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-chart-1/5 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-linear-to-bl from-primary/5 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-linear-to-tr from-chart-1/5 via-transparent to-transparent rounded-full blur-3xl" />
       </div>
 
       <div className="fixed top-4 left-4 z-50">
