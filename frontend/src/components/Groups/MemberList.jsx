@@ -2,8 +2,7 @@ import { useUser } from '@/context/UserContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Crown, UserMinus } from 'lucide-react';
+import { Crown, UserMinus, User } from 'lucide-react';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
 import {
@@ -66,10 +65,9 @@ export default function MemberList({ group, balances, currentUserId, isOwner, on
           <Card key={member._id} className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={member.profilePhoto} />
-                  <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                </Avatar>
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{member.name}</span>

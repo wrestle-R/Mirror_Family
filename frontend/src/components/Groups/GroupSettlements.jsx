@@ -6,22 +6,24 @@ import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import groupsApi from '@/config/groupsApi';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function GroupSettlements({ groupId, group, currentUserId, onUpdate, refreshKey }) {
   const { user } = useUser();
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settling, setSettling] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedSettlement, setSelectedSettlement] = useState(null);
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
     fetchBalances();
@@ -42,18 +44,30 @@ export default function GroupSettlements({ groupId, group, currentUserId, onUpda
     }
   };
 
-  const handleSettle = async (settlement) => {
+  const handleSettleClick = (settlement) => {
+    setSelectedSettlement(settlement);
+    setAmount(settlement.amount);
+    setOpen(true);
+  };
+
+  const handleConfirmSettle = async () => {
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
     try {
       setSettling(true);
       const response = await groupsApi.settleBalance(groupId, {
-        fromUserId: settlement.from.userId,
-        toUserId: settlement.to.userId,
-        amount: settlement.amount,
+        fromUserId: selectedSettlement.from.userId,
+        toUserId: selectedSettlement.to.userId,
+        amount: Number(amount),
         firebaseUid: user.uid,
       });
 
       if (response.success) {
         toast.success('Settlement recorded successfully!');
+        setOpen(false);
         fetchBalances();
         onUpdate();
       }
@@ -133,29 +147,13 @@ export default function GroupSettlements({ groupId, group, currentUserId, onUpda
                     </p>
                   </div>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button disabled={settling} variant="default">
-                        Settle Up
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Settlement</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to record a settlement of ₹{settlement.amount.toLocaleString('en-IN')} from {settlement.from.name} to {settlement.to.name}?
-                          <br /><br />
-                          This will create a transaction record and mark the relevant expenses as settled.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleSettle(settlement)}>
-                          Confirm Settlement
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button 
+                    disabled={settling} 
+                    variant="default"
+                    onClick={() => handleSettleClick(settlement)}
+                  >
+                    Settle Up
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -168,6 +166,41 @@ export default function GroupSettlements({ groupId, group, currentUserId, onUpda
           💡 These settlements are optimized to minimize the number of transactions needed
         </p>
       </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Settle Up</DialogTitle>
+            <DialogDescription>
+              Record a payment from {selectedSettlement?.from.name} to {selectedSettlement?.to.name}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="amount">Amount</Label>
+              <Input
+                id="amount"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                max={selectedSettlement?.amount}
+              />
+              <p className="text-xs text-muted-foreground">
+                Total owed: ₹{selectedSettlement?.amount.toLocaleString('en-IN')}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmSettle} disabled={settling}>
+              {settling ? 'Settling...' : 'Confirm Settlement'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
