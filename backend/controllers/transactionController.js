@@ -176,10 +176,10 @@ exports.createTransaction = async (req, res) => {
 
     await transaction.save();
 
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: 'Transaction created successfully',
-      data: transaction 
+      data: transaction
     });
   } catch (error) {
     console.error('Error creating transaction:', error);
@@ -191,16 +191,16 @@ exports.createTransaction = async (req, res) => {
 exports.getTransactions = async (req, res) => {
   try {
     const { firebaseUid } = req.params;
-    const { 
-      page = 1, 
-      limit = 20, 
-      type, 
-      category, 
-      startDate, 
-      endDate, 
-      sortBy = 'date', 
+    const {
+      page = 1,
+      limit = 20,
+      type,
+      category,
+      startDate,
+      endDate,
+      sortBy = 'date',
       sortOrder = 'desc',
-      search 
+      search
     } = req.query;
 
     if (!firebaseUid) {
@@ -338,10 +338,10 @@ exports.updateTransaction = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: 'Transaction updated successfully',
-      data: transaction 
+      data: transaction
     });
   } catch (error) {
     console.error('Error updating transaction:', error);
@@ -359,9 +359,9 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
 
-    res.status(200).json({ 
-      success: true, 
-      message: 'Transaction deleted successfully' 
+    res.status(200).json({
+      success: true,
+      message: 'Transaction deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting transaction:', error);
@@ -387,7 +387,7 @@ exports.getTransactionStats = async (req, res) => {
     // Calculate date range
     const now = new Date();
     let startDate;
-    
+
     switch (period) {
       case 'week':
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -487,8 +487,8 @@ exports.getTransactionStats = async (req, res) => {
     });
 
     stats.netSavings = stats.totalIncome - stats.totalExpense;
-    stats.savingsRate = stats.totalIncome > 0 
-      ? Math.round((stats.netSavings / stats.totalIncome) * 100) 
+    stats.savingsRate = stats.totalIncome > 0
+      ? Math.round((stats.netSavings / stats.totalIncome) * 100)
       : 0;
 
     res.status(200).json({
@@ -615,6 +615,78 @@ exports.importBills = async (req, res) => {
       message: 'Error importing bills',
       error: error.message
     });
+  }
+};
+
+// Bulk create transactions (e.g. from CSV import)
+exports.createBulkTransactions = async (req, res) => {
+  try {
+    const { firebaseUid, transactions } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ success: false, message: 'Firebase UID is required' });
+    }
+
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return res.status(400).json({ success: false, message: 'No transactions provided' });
+    }
+
+    const student = await Student.findOne({ firebaseUid });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const toCreate = [];
+    const warnings = [];
+
+    for (const [index, t] of transactions.entries()) {
+      // Basic validation
+      let amount = Number(t.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        warnings.push(`Row ${index + 1}: Skipped due to invalid amount: ${t.amount}`);
+        continue;
+      }
+
+      const type = normalizeType(t.type ? t.type.toLowerCase() : 'expense');
+      const category = normalizeCategory(t.category ? t.category.toLowerCase() : '', type); // normalizeCategory handles defaults
+      const paymentMethod = normalizePaymentMethod(t.paymentMethod ? t.paymentMethod.toLowerCase() : '');
+
+      const dateStr = t.date ? t.date : new Date();
+      const dateObj = new Date(dateStr);
+      const safeDate = Number.isNaN(dateObj.getTime()) ? new Date() : dateObj;
+
+      toCreate.push({
+        student: student._id,
+        type,
+        amount,
+        category,
+        description: t.description || '',
+        date: safeDate,
+        paymentMethod,
+        merchant: t.merchant || '',
+        notes: t.notes || ''
+      });
+    }
+
+    if (toCreate.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No valid transactions found to import',
+        data: { created: [], warnings }
+      });
+    }
+
+    const created = await Transaction.insertMany(toCreate);
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully imported ${created.length} transactions`,
+      data: { created, warnings }
+    });
+
+  } catch (error) {
+    console.error('Error in bulk create transactions:', error);
+    res.status(500).json({ success: false, message: 'Error importing transactions', error: error.message });
   }
 };
 

@@ -14,6 +14,7 @@ const upload = multer({
 // All specific POST routes first
 router.post('/', transactionController.createTransaction);
 router.post('/import-bills', upload.array('images', 8), transactionController.importBills);
+router.post('/bulk', transactionController.createBulkTransactions);
 
 // Then specific GET routes
 router.get('/stats/:firebaseUid', transactionController.getTransactionStats);

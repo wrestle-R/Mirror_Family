@@ -12,8 +12,9 @@ import {
   TrendingUp, TrendingDown, Wallet, MoreVertical, Loader2, Utensils, Car, Film,
   ShoppingBag, Lightbulb, Home, BookOpen, Hospital, ShoppingCart, Smartphone,
   Package, Briefcase, Gift, GraduationCap, Banknote, Laptop, ArrowLeftRight,
-  BarChart3, DollarSign, Plane, Dumbbell, Sparkles, Shield
+  BarChart3, DollarSign, Plane, Dumbbell, Sparkles, Shield, Upload
 } from "lucide-react";
+import Papa from "papaparse";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Money } from "@/components/ui/money";
@@ -81,12 +82,12 @@ const PAYMENT_METHODS = [
 
 const Transactions = () => {
   const { user } = useUser();
-  
+
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [stats, setStats] = useState({ totalIncome: 0, totalExpense: 0 });
-  
+
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -242,7 +243,7 @@ const Transactions = () => {
 
   const handleUpdateTransaction = async () => {
     if (!editingTransaction) return;
-    
+
     setSaving(true);
     try {
       const response = await axios.put(`${API_URL}/api/transactions/${editingTransaction._id}`, {
@@ -270,7 +271,7 @@ const Transactions = () => {
   const handleDeleteTransaction = async (transactionId) => {
     try {
       const response = await axios.delete(`${API_URL}/api/transactions/${transactionId}`);
-      
+
       if (response.data.success) {
         toast.success("Transaction deleted successfully!");
         setDeleteConfirm(null);
@@ -280,6 +281,121 @@ const Transactions = () => {
       console.error("Error deleting transaction:", error);
       toast.error("Failed to delete transaction");
     }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const params = new URLSearchParams({
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        limit: '1000' // Get a large number of transactions
+      });
+
+      if (filters.type) params.append('type', filters.type);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.search) params.append('search', filters.search);
+      if (filters.startDate) params.append('startDate', filters.startDate.toISOString());
+      if (filters.endDate) params.append('endDate', filters.endDate.toISOString());
+
+      const response = await axios.get(`${API_URL}/api/transactions/${user.uid}?${params}`);
+
+      if (response.data.success && response.data.data.transactions.length > 0) {
+        const csvData = response.data.data.transactions.map(t => ({
+          Type: t.type,
+          Amount: t.amount,
+          Category: t.category,
+          Description: t.description,
+          'Payment Method': t.paymentMethod,
+          Date: format(new Date(t.date), 'yyyy-MM-dd'),
+          Merchant: t.merchant || ''
+        }));
+
+        const csv = Papa.unparse(csvData);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'transactions_export.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast.info("No transactions to export");
+      }
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      toast.error("Failed to export transactions");
+    }
+  };
+
+  const handleImportCSV = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const transactions = results.data.map(row => {
+            // Map common CSV headers to our schema (case-insensitive usually handled by normalization in backend, but let's try to map keys)
+            // We expect standard keys but let's be flexible
+            const getVal = (keys) => {
+              for (const k of keys) {
+                if (row[k] !== undefined) return row[k];
+                // Try case insensitive
+                const found = Object.keys(row).find(rk => rk.toLowerCase() === k.toLowerCase());
+                if (found) return row[found];
+              }
+              return undefined;
+            };
+
+            return {
+              type: getVal(['type', 'Type']) || 'expense',
+              amount: getVal(['amount', 'Amount', 'Value']),
+              category: getVal(['category', 'Category']),
+              description: getVal(['description', 'Description', 'Memo']),
+              date: getVal(['date', 'Date']),
+              paymentMethod: getVal(['paymentMethod', 'Payment Method', 'Method']),
+              merchant: getVal(['merchant', 'Merchant', 'Payee'])
+            };
+          });
+
+          // Filter out empty rows/invalid amounts handled by backend, but quick check here
+          const validTx = transactions.filter(t => t.amount);
+
+          if (validTx.length === 0) {
+            toast.error("No valid transactions found in CSV");
+            return;
+          }
+
+          const response = await axios.post(`${API_URL}/api/transactions/bulk`, {
+            firebaseUid: user.uid,
+            transactions: validTx
+          });
+
+          if (response.data.success) {
+            toast.success(`Imported ${response.data.data.created.length} transactions`);
+            if (response.data.data.warnings.length > 0) {
+              toast.warning(`Check console for ${response.data.data.warnings.length} warnings`);
+              console.warn("Import warnings:", response.data.data.warnings);
+            }
+            fetchTransactions();
+          }
+        } catch (error) {
+          console.error("Error importing CSV:", error);
+          toast.error("Failed to import transactions");
+        }
+        // Reset input
+        event.target.value = null;
+      },
+      error: (error) => {
+        console.error("CSV Parse Error:", error);
+        toast.error("Failed to parse CSV file");
+        event.target.value = null;
+      }
+    });
   };
 
   const clearFilters = () => {
@@ -354,10 +470,29 @@ const Transactions = () => {
             View and manage all your financial transactions
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Transaction
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <div className="relative">
+            <input
+              type="file"
+              accept=".csv"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={handleImportCSV}
+              title="Upload CSV"
+            />
+            <Button variant="outline">
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </Button>
+          </div>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Transaction
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -379,13 +514,13 @@ const Transactions = () => {
         <Card className="border-l-4 border-l-red-500">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-                      <p className="text-sm text-muted-foreground">Total Expenses</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      <Money>{(() => {
-                        const fromStats = stats?.totalExpense;
-                        return `₹${(fromStats).toLocaleString()}`;
-                      })()}</Money>
-                    </p>
+              <p className="text-sm text-muted-foreground">Total Expenses</p>
+              <p className="text-2xl font-bold text-red-600">
+                <Money>{(() => {
+                  const fromStats = stats?.totalExpense;
+                  return `₹${(fromStats).toLocaleString()}`;
+                })()}</Money>
+              </p>
             </div>
             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
               <TrendingDown className="w-6 h-6 text-red-600" />
@@ -551,16 +686,15 @@ const Transactions = () => {
               {transactions.map((tx) => {
                 const categoryInfo = getCategoryInfo(tx.category);
                 return (
-                  <div 
-                    key={tx._id} 
+                  <div
+                    key={tx._id}
                     className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
                   >
                     {/* Icon */}
-                    <div className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center text-xl ${
-                      tx.type === 'income' 
-                        ? 'bg-green-100 dark:bg-green-900/30' 
+                    <div className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center text-xl ${tx.type === 'income'
+                        ? 'bg-green-100 dark:bg-green-900/30'
                         : 'bg-red-100 dark:bg-red-900/30'
-                    }`}>
+                      }`}>
                       {categoryInfo.icon}
                     </div>
 
@@ -784,11 +918,10 @@ const Transactions = () => {
                     setNewTransactionType('expense');
                     setNewTransaction(prev => ({ ...prev, category: 'food' }));
                   }}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                    newTransactionType === 'expense' 
-                      ? 'bg-red-500 text-white' 
+                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${newTransactionType === 'expense'
+                      ? 'bg-red-500 text-white'
                       : 'bg-muted hover:bg-muted/80'
-                  }`}
+                    }`}
                 >
                   <ArrowDownRight className="w-4 h-4" />
                   Expense
@@ -798,11 +931,10 @@ const Transactions = () => {
                     setNewTransactionType('income');
                     setNewTransaction(prev => ({ ...prev, category: 'allowance' }));
                   }}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                    newTransactionType === 'income' 
-                      ? 'bg-green-500 text-white' 
+                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${newTransactionType === 'income'
+                      ? 'bg-green-500 text-white'
                       : 'bg-muted hover:bg-muted/80'
-                  }`}
+                    }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
                   Income
