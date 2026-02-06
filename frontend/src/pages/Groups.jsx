@@ -102,7 +102,7 @@ export default function Groups() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 space-y-6 p-8 pt-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

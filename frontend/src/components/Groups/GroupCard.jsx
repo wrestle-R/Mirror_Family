@@ -20,8 +20,8 @@ export default function GroupCard({ group, onClick, currentUserId, onEdit, onDel
   return (
     <Card
       className={cn(
-        "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]",
-        "border-2 hover:border-primary/50"
+        "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg",
+        "hover:border-primary/50"
       )}
       onClick={onClick}
     >
@@ -29,7 +29,7 @@ export default function GroupCard({ group, onClick, currentUserId, onEdit, onDel
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
               <Users className="w-6 h-6 text-primary" />
             </div>
             <div>
