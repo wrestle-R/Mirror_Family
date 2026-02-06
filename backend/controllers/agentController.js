@@ -52,48 +52,49 @@ const getSystemPrompt = (type) => {
     `;
   }
   if (type === 'savings') {
-    return basePrompt + `
-    Act as a "Strategic Wealth Architect".
-    
-    CONTEXT: You will receive 'shortTermGoals' and 'longTermGoals' arrays from user data.
-    
-    TASKS:
-    1. Calculate Monthly Surplus = Income - (Total Expenses).
-    2. Aggregate ALL goal targets:
-       - Sum up targetAmount from ALL shortTermGoals (filter out completed ones)
-       - Sum up targetAmount from ALL longTermGoals (filter out completed ones)
-       - Add Emergency Fund target (6 months of expenses if freelancer detected, else 3 months)
-       - Total = Emergency + Short Term Sum + Long Term Sum
-    3. Calculate current total savings across all goals (sum of currentAmount fields).
-    4. Create a step-by-step execution plan (comprehensive_plan) with 3-5 strategic steps.
-    5. Generate a DETAILED Mermaid flowchart (mermaid_diagram):
-       - STRICT SYNTAX: Use "graph TD"
-       - IDs must be alphanumeric only (A, B, C, D1, D2, etc.)
-       - ALL labels must be in quotes
-       - NO special characters like ₹ in labels
-       - Show: Income -> Expenses -> Surplus -> [Emergency, ShortGoal1, ShortGoal2, LongGoal1, etc.]
-       - Use decision nodes for allocation logic
-    
-    REQUIRED JSON STRUCTURE:
-    {
-      "summary": "High-level strategy summary in 1-2 sentences.",
-      "monthly_surplus": 5000,
-      "simulation_parameters": {
-        "current_total_savings": 50000,
-        "total_goal_target": 500000,
-        "base_monthly_contribution": 5000
-      },
-      "comprehensive_plan": [
-        { "step": "1", "title": "Emergency Shield", "description": "Build 6-month safety net in liquid funds first." },
-        { "step": "2", "title": "Short-Term Wins", "description": "Allocate 40% of surplus to short-term goals." },
-        { "step": "3", "title": "Long-Term Wealth", "description": "Invest remaining 30% in equity/debt mix for long-term." }
-      ],
-      "mermaid_diagram": "graph TD\\n  A[\\\"Monthly Income\\\"] --> B[\\\"Fixed Expenses\\\"]\\n  A --> C[\\\"Surplus\\\"]\\n  C --> D{\\\"Allocation\\\"}\\n  D --> E[\\\"Emergency Fund\\\"]\\n  D --> F[\\\"Short Term Goals\\\"]\\n  D --> G[\\\"Long Term Wealth\\\"]",
-      "tips": ["Automate savings on payday", "Review goals quarterly", "Increase contributions with raises"]
-    }
+    return `You are a Strategic Wealth Architect financial advisor for students.
+Analyze user financial data and create a comprehensive savings strategy.
+Return ONLY valid JSON with NO markdown, NO extra text.
 
-    All amounts in INR.
-    `;
+USER DATA FIELDS:
+- income: monthly income
+- expenses: {rent, food, transport, utilities, other}
+- savings: current savings
+- shortTermGoals: [{title, targetAmount, currentAmount, deadline, isCompleted}, ...]
+- longTermGoals: [{title, targetAmount, currentAmount, deadline, isCompleted}, ...]
+
+CALCULATE:
+1. monthly_surplus = income - (expenses.rent + expenses.food + expenses.transport + expenses.utilities + expenses.other)
+2. total_expenses = sum all expense values
+3. emergency_target = total_expenses * 4
+4. short_goals_sum = sum targetAmount from shortTermGoals where isCompleted is false
+5. long_goals_sum = sum targetAmount from longTermGoals where isCompleted is false
+6. total_goal_target = emergency_target + short_goals_sum + long_goals_sum
+7. current_in_goals = sum currentAmount from all goals
+8. current_total_savings = savings + current_in_goals
+9. base_monthly_contribution = monthly_surplus
+
+RETURN THIS JSON (with calculated numbers):
+{
+  "summary": "Strategy description",
+  "monthly_surplus": 8000,
+  "simulation_parameters": {
+    "current_total_savings": 18000,
+    "total_goal_target": 100000,
+    "base_monthly_contribution": 8000
+  },
+  "comprehensive_plan": [
+    { "step": "1", "title": "Emergency Fund", "description": "Build 4-month emergency fund first" },
+    { "step": "2", "title": "Short-Term Goals", "description": "Allocate to short-term goals" },
+    { "step": "3", "title": "Long-Term Wealth", "description": "Invest for long-term goals" },
+    { "step": "4", "title": "Review", "description": "Review quarterly" }
+  ],
+  "mermaid_diagram": "graph TD\\n  A[\\"Income\\"] --> B[\\"Expenses\\"]\\n  A --> C[\\"Surplus\\"]\\n  C --> D[\\"Emergency\\"]\\n  C --> E[\\"Short Goals\\"]\\n  C --> F[\\"Long Goals\\"]",
+  "tips": ["Automate savings", "Use SIPs", "Review quarterly", "Increase with raises"]
+}
+
+Mermaid rules: graph TD, IDs A-F, escape quotes [\\"Text\\"], use -->, use \\n, no rupee symbols.
+All amounts INR. Return ONLY JSON.`;
   }
   if (type === 'debt') {
     return basePrompt + `
@@ -235,6 +236,9 @@ exports.generateAgentData = async (req, res) => {
       return res.status(500).json({ message: "AI response parsing failed", raw: content });
     }
 
+    console.log('🤖 LLM Raw Response:', content);
+    console.log('📊 Context Data Sent:', JSON.stringify(contextData, null, 2));
+
     // 3. Save to DB
     const agentData = await AgentData.findOneAndUpdate(
       { student: studentId, type },
@@ -244,6 +248,8 @@ exports.generateAgentData = async (req, res) => {
       },
       { upsert: true, new: true }
     );
+
+    console.log('✅ Saved Agent Data:', JSON.stringify(parsedData, null, 2));
 
     res.status(200).json(agentData);
 
