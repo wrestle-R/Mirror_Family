@@ -52,7 +52,7 @@ export default function FilterBar({
         style={[styles.toggleButton, open && styles.toggleButtonActive]}
         onPress={() => setOpen(!open)}
       >
-        <Text style={styles.toggleText}>
+        <Text style={[styles.toggleText, open && { color: Colors.light.primaryForeground }]}>
           {open ? 'Hide Filters' : 'Show Filters'}
         </Text>
         {hasActiveFilters && (
@@ -146,18 +146,89 @@ export default function FilterBar({
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 15, backgroundColor: Colors.dark, borderRadius: 10, padding: 8 },
-  toggleButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 10, backgroundColor: Colors.primary + '20', borderRadius: 8, marginBottom: 5 },
-  toggleButtonActive: { backgroundColor: Colors.secondary },
-  toggleText: { color: Colors.accent, fontWeight: 'bold', fontSize: 14 },
-  activeDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.primary, marginLeft: 8 },
-  filtersContainer: { paddingBottom: 10 },
-  groupLabel: { color: Colors.accent, fontWeight: '600', fontSize: 12, marginVertical: 4, marginLeft: 2 },
-  groupScroll: { marginBottom: 8 },
-  button: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1, marginRight: 8, marginBottom: 4 },
-  buttonActive: { backgroundColor: Colors.secondary },
-  text: { color: Colors.secondary, fontSize: 12 },
-  textActive: { color: Colors.dark, fontWeight: '600' },
-  clearButton: { backgroundColor: Colors.red, padding: 8, borderRadius: 8, alignSelf: 'center', marginTop: 8 },
-  clearText: { color: Colors.dark, fontWeight: 'bold', fontSize: 13 },
+  container: { 
+    marginBottom: 16, 
+    backgroundColor: Colors.light.card, 
+    borderRadius: 12, 
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  toggleButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    padding: 12, 
+    backgroundColor: Colors.light.muted, 
+    borderRadius: 10, 
+    marginBottom: 8,
+  },
+  toggleButtonActive: { 
+    backgroundColor: Colors.light.primary,
+  },
+  toggleText: { 
+    color: Colors.light.foreground, 
+    fontWeight: '600', 
+    fontSize: 14,
+  },
+  activeDot: { 
+    width: 8, 
+    height: 8, 
+    borderRadius: 4, 
+    backgroundColor: Colors.light.primary, 
+    marginLeft: 8,
+  },
+  filtersContainer: { 
+    paddingTop: 8,
+  },
+  groupLabel: { 
+    color: Colors.light.foreground, 
+    fontWeight: '600', 
+    fontSize: 13, 
+    marginVertical: 8, 
+    marginLeft: 4,
+  },
+  groupScroll: { 
+    marginBottom: 10,
+  },
+  button: { 
+    paddingHorizontal: 14, 
+    paddingVertical: 10, 
+    borderRadius: 10, 
+    backgroundColor: Colors.light.muted, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1, 
+    marginRight: 8, 
+    marginBottom: 4,
+  },
+  buttonActive: { 
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  text: { 
+    color: Colors.light.foreground, 
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  textActive: { 
+    color: Colors.light.primaryForeground, 
+    fontWeight: '600',
+  },
+  clearButton: { 
+    backgroundColor: Colors.light.destructive, 
+    padding: 10, 
+    borderRadius: 10, 
+    alignSelf: 'center', 
+    marginTop: 12,
+  },
+  clearText: { 
+    color: Colors.light.primaryForeground, 
+    fontWeight: '700', 
+    fontSize: 13,
+  },
 });

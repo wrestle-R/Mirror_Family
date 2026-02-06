@@ -11,28 +11,18 @@ const upload = multer({
 	}
 });
 
-// Create a new transaction
+// All specific POST routes first
 router.post('/', transactionController.createTransaction);
-
-// Import transactions from receipt images
 router.post('/import-bills', upload.array('images', 8), transactionController.importBills);
 
-// Get transaction statistics
+// Then specific GET routes
 router.get('/stats/:firebaseUid', transactionController.getTransactionStats);
-
-// Get monthly comparison
 router.get('/monthly/:firebaseUid', transactionController.getMonthlyComparison);
-
-// Get all transactions for a student (with filtering)
-router.get('/:firebaseUid', transactionController.getTransactions);
-
-// Get a single transaction
 router.get('/single/:transactionId', transactionController.getTransaction);
 
-// Update a transaction
+// Then general routes (must be last as they match broader patterns)
+router.get('/:firebaseUid', transactionController.getTransactions);
 router.put('/:transactionId', transactionController.updateTransaction);
-
-// Delete a transaction
 router.delete('/:transactionId', transactionController.deleteTransaction);
 
 module.exports = router;
