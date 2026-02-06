@@ -1,4 +1,4 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2 } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { cn } from "@/lib/utils"
@@ -51,6 +51,11 @@ const items = [
     icon: CandlestickChart,
   },
   {
+    title: "Time Machine",
+    url: "/time-machine",
+    icon: Clock,
+  },
+  {
     title: "Budget Agent",
     url: "/agent/budget",
     icon: Wallet,
@@ -69,6 +74,11 @@ const items = [
     title: "Investment Scout",
     url: "/agent/investment",
     icon: TrendingUp,
+  },
+  {
+    title: "Council Synthesis",
+    url: "/council-synthesis",
+    icon: Tv2,
   }
 ]
 

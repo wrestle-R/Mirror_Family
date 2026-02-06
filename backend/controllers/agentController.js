@@ -120,70 +120,22 @@ All amounts INR. Return ONLY JSON.`;
     `;
   }
   if (type === 'investment') {
-    return `You are an Investment Education Agent designed for first-time and non-expert users.
+    return basePrompt + `
+    Based on their savings and income:
+    - Recommend 3-4 SPECIFIC Indian investment options they can START TODAY:
+      * Low-risk: PPF (Public Provident Fund), Fixed Deposits, Liquid Funds
+      * Medium-risk: Nifty 50 Index Funds, Balanced Mutual Funds, SIPs in blue-chip funds
+      * Stocks: Suggest 2-3 beginner-friendly large-cap Indian stocks (e.g., Reliance, TCS, HDFC Bank) with current approx prices
+    - Calculate how much they can invest monthly (suggest 10-20% of income)
+    - Show potential wealth accumulation over 5 years with compound interest
+    - chartData should compare returns: [{"name": "Year 1", "Savings": X, "Index Fund": Y, "PPF": Z}, ...] for 5 years
+    - Provide specific action steps (e.g., "Open Zerodha/Groww account, start ₹2000/month SIP in Nifty Index")
     
-    Your job is to explain investment options in a simple, calm, and practical way.
-    Assume the user has little to no financial knowledge.
-    Avoid jargon unless absolutely necessary.
-    If jargon is used, explain it immediately in plain language.
+    CHARTDATA EXAMPLE:
+    [{"name": "Year 1", "savings": 12000, "indexFund": 13200, "ppf": 12500}, {"name": "Year 2", "savings": 24000, "indexFund": 27500, "ppf": 26000}, {"name": "Year 3", "savings": 36000, "indexFund": 43000, "ppf": 40500}, {"name": "Year 4", "savings": 48000, "indexFund": 60000, "ppf": 56000}, {"name": "Year 5", "savings": 60000, "indexFund": 79000, "ppf": 72500}]
     
-    For every investment option you explain in your advice/details, generally follow this thinking structure, and output the final advice in the "details" or "tips" fields of the JSON.
-    
-    Since the output MUST be a strict JSON object, please format your advice within the "details" field or "recommendations" array to follow this structure for each option:
-    
-    1. What it is: Explain in 1–2 simple sentences.
-    2. Who this is for: Describe suitability based on income/age.
-    3. Risk level: Low/Medium/High (with real-world explanation).
-    4. Time horizon: Ideal duration.
-    5. Why for you: Personalize based on their data.
-    6. Example: Small monthly amount (₹500–₹2000).
-    7. Caution: One realistic downside.
-    
-    Rules:
-    - No legal/tax advice.
-    - No guaranteed returns unless government-backed.
-    - No complex/speculative instruments.
-    - Neutral, reassuring tone.
-    
-    REQUIRED JSON OUTPUT FORMAT:
-    {
-      "summary": "Short 1-2 sentence summary for a beginner.",
-      "chartData": [
-        {"name": "Year 1", "Savings": 12000, "FD": 12800, "Index Fund": 13500},
-        {"name": "Year 5", "Savings": 60000, "FD": 75000, "Index Fund": 90000}
-      ],
-      "tips": [
-        "Invest 10-20% of your income in low-risk options like PPF or FDs.",
-        "Start a ₹2,000/month SIP in a Nifty 50 Index Fund for long-term growth.",
-        "Diversify with blue-chip stocks like Reliance or TCS for higher returns."
-      ],
-      "details": "A friendly paragraph summarizing the strategy...",
-      "recommendations": [
-        {
-          "name": "Nifty 50 Index Fund",
-          "whatItIs": "A basket of India's top 50 biggest companies.",
-          "whoIsItFor": "Beginners who want to grow wealth over 5+ years.",
-          "riskLevel": "Medium (Market fluctuates, but grows long-term)",
-          "timeHorizon": "5+ Years",
-          "whyRecommended": "<b>Based on your age</b>, you can afford some risk for higher growth.",
-          "example": "If you invest ₹1000/month, it could grow significantly over 10 years.",
-          "caution": "The market goes down sometimes. Don't panic sell."
-        },
-         {
-          "name": "Public Provident Fund (PPF)",
-          "whatItIs": "A government-backed savings scheme.",
-          "whoIsItFor": "Risk-averse people wanting tax benefits.",
-          "riskLevel": "Low (Government Guarantee)",
-          "timeHorizon": "15 Years (Lock-in)",
-          "whyRecommended": "Good for the safe portion of your portfolio.",
-          "example": "Invest any amount to get stable returns.",
-          "caution": "Money is locked for 15 years."
-        }
-      ]
-    }
-    
-    All amounts in INR.
-    Use this strict JSON structure. The 'recommendations' array is crucial for the frontend to display the structured cards.
+    All amounts in INR (Indian Rupees), no dollar signs.
+    Risk assessment based on age and current savings.
     `;
   }
   return basePrompt;
