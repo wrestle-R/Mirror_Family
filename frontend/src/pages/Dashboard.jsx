@@ -385,38 +385,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Financial Health Score - Flagship Feature */}
-        {profileData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <FinancialHealthScoreCard
-              profileData={{
-                ...profileData,
-                shortTermGoals: shortTermGoals || [],
-                longTermGoals: longTermGoals || []
-              }}
-            />
-          </motion.div>
-        )}
-
-        {/* Goal Progress Timeline */}
-        {profileData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <GoalProgressTimeline
-              currentSavings={profileData.currentSavings || 0}
-              shortTermGoals={shortTermGoals || []}
-              longTermGoals={longTermGoals || []}
-            />
-          </motion.div>
-        )}
-
         {/* Quick Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Monthly Income */}
