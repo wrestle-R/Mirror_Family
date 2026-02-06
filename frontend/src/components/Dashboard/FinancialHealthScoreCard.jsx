@@ -103,7 +103,7 @@ const BreakdownArc = ({ index, score, color, label, isActive, totalArcs = 4 }) =
     );
 };
 
-export default function FinancialHealthScoreCard({ profileData }) {
+export default function FinancialHealthScoreCard({ profileData, isCompact = false }) {
     const [isHovered, setIsHovered] = useState(false);
     const healthData = calculateFinancialHealth(profileData);
     const { totalScore, breakdown } = healthData;
@@ -143,7 +143,7 @@ export default function FinancialHealthScoreCard({ profileData }) {
             </CardHeader>
 
             <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                <div className={`flex flex-col ${isCompact ? '' : 'lg:flex-row'} items-center gap-8 md:gap-12`}>
                     {/* Left: The Ring Visualization */}
                     <div className="relative w-64 h-64 flex-shrink-0">
                         <svg viewBox="0 0 200 200" className="w-full h-full transform transition-transform duration-500 group-hover:scale-105">
@@ -225,8 +225,11 @@ export default function FinancialHealthScoreCard({ profileData }) {
                                         animate={{ opacity: 1, y: 0 }}
                                         className="text-sm font-medium text-muted-foreground mt-1"
                                     >
-                                        {isHovered ? "Breakdown" : "Excellent"}
-                                        {/* Logic for Label needs to match score */}
+                                        {isHovered ? "Breakdown" : (
+                                            totalScore >= 80 ? "Excellent" :
+                                                totalScore >= 60 ? "Good" :
+                                                    totalScore >= 40 ? "Fair" : "Needs Work"
+                                        )}
                                     </motion.div>
                                 </div>
                             </foreignObject>

@@ -1,13 +1,13 @@
-
 /**
- * Calculates a comprehensive Financial Health Score (0-100) based on user profile data.
- * The score is 100% deterministic and derived from existing fields.
+ * Financial Health Score Calculator
  * 
- * Components:
- * 1. Cash Flow Health (30%): Income vs Expenses
- * 2. Savings Discipline (30%): Current Savings vs Goal & Income
- * 3. Debt Pressure (20%): Debt-to-Income & Total Debt
- * 4. Goal Progress (20%): Active & Completed Goals
+ * Produces a score from 0-100 based on:
+ * 1. Cash Flow Health (30%): Income vs Expenses ratio
+ * 2. Savings Buffer (30%): Emergency fund coverage
+ * 3. Debt Pressure (20%): Debt-to-Income ratio
+ * 4. Goal Progress (20%): Active & completed goals
+ * 
+ * The score is realistic but achievable - users with good habits can score 90+
  */
 
 export const calculateFinancialHealth = (profile) => {
@@ -15,14 +15,12 @@ export const calculateFinancialHealth = (profile) => {
 
     const {
         monthlyIncome = 0,
-        monthlyBudget = 0,
         currentSavings = 0,
         savingsGoal = 0,
         totalDebt = 0,
         debtPaymentMonthly = 0,
         shortTermGoals = [],
         longTermGoals = [],
-        // Expenses
         rentExpense = 0,
         foodExpense = 0,
         transportationExpense = 0,
@@ -32,197 +30,288 @@ export const calculateFinancialHealth = (profile) => {
 
     const totalExpenses = rentExpense + foodExpense + transportationExpense + utilitiesExpense + otherExpenses;
 
-    // --- 1. Cash Flow Health (30%) ---
-    // Ideal: Expenses <= 80% of Income (20% surplus)
-    // Critical: Expenses >= Income
-    let cashFlowScore = 0;
-    let cashFlowLabel = "Critical";
-    let cashFlowMessage = "Expenses exceed income";
+    // =========================================================================
+    // 1. CASH FLOW HEALTH (30%)
+    // =========================================================================
+    // Expense Ratio | Score Range
+    // --------------|------------
+    // 0-40%         | 85-100 (Excellent)
+    // 40-60%        | 65-85  (Strong)
+    // 60-80%        | 45-65  (Good)
+    // 80-95%        | 20-45  (Fair)
+    // 95-100%       | 5-20   (Poor)
+    // >100%         | 0-5    (Critical)
+
+    let cashFlowScore = 50; // Default
+    let cashFlowLabel = "Unknown";
+    let cashFlowMessage = "Add data for analysis";
 
     if (monthlyIncome > 0) {
         const expenseRatio = totalExpenses / monthlyIncome;
-        if (expenseRatio <= 0.5) {
-            cashFlowScore = 100;
+
+        if (expenseRatio <= 0.4) {
+            // Exceptional saver
+            cashFlowScore = 85 + ((0.4 - expenseRatio) / 0.4) * 15;
+            cashFlowLabel = "Excellent";
+            cashFlowMessage = `${Math.round((1 - expenseRatio) * 100)}% surplus`;
+        } else if (expenseRatio <= 0.6) {
+            // Very good
+            cashFlowScore = 65 + ((0.6 - expenseRatio) / 0.2) * 20;
             cashFlowLabel = "Strong";
-            cashFlowMessage = "Excellent surplus (>50%)";
+            cashFlowMessage = `${Math.round((1 - expenseRatio) * 100)}% surplus`;
         } else if (expenseRatio <= 0.8) {
-            // Linear interpolation between 0.5 (100) and 0.8 (70)
-            cashFlowScore = 70 + ((0.8 - expenseRatio) / 0.3) * 30;
+            // Average/Good
+            cashFlowScore = 45 + ((0.8 - expenseRatio) / 0.2) * 20;
             cashFlowLabel = "Good";
-            cashFlowMessage = "Healthy surplus (20%+)";
-        } else if (expenseRatio <= 1.0) {
-            // Linear interpolation between 0.8 (70) and 1.0 (40)
-            cashFlowScore = 40 + ((1.0 - expenseRatio) / 0.2) * 30;
+            cashFlowMessage = `${Math.round((1 - expenseRatio) * 100)}% surplus`;
+        } else if (expenseRatio <= 0.95) {
+            // Tight
+            cashFlowScore = 20 + ((0.95 - expenseRatio) / 0.15) * 25;
             cashFlowLabel = "Fair";
-            cashFlowMessage = "Tight budget, low surplus";
+            cashFlowMessage = "Budget is tight";
+        } else if (expenseRatio <= 1.0) {
+            // Very tight
+            cashFlowScore = 5 + ((1.0 - expenseRatio) / 0.05) * 15;
+            cashFlowLabel = "Poor";
+            cashFlowMessage = "Almost breaking even";
         } else {
             // Overspending
-            cashFlowScore = Math.max(0, 40 - ((expenseRatio - 1.0) * 100));
-            cashFlowLabel = "Poor";
+            cashFlowScore = Math.max(0, 5 - ((expenseRatio - 1.0) * 50));
+            cashFlowLabel = "Critical";
             cashFlowMessage = "Spending exceeds income";
         }
     } else if (totalExpenses === 0) {
-        // No data
         cashFlowScore = 50;
         cashFlowLabel = "Unknown";
-        cashFlowMessage = "Add income/expenses to track";
+        cashFlowMessage = "Add income data";
     }
 
-    // --- 2. Savings Discipline (30%) ---
-    // Based on Savings vs Goal. If no goal, check Savings vs Income (Emergency Fund proxy)
+    // =========================================================================
+    // 2. SAVINGS BUFFER (30%)
+    // =========================================================================
+    // Months Covered | Score
+    // ---------------|-------
+    // 12+ months     | 95-100
+    // 6-12 months    | 75-95
+    // 3-6 months     | 50-75
+    // 1-3 months     | 25-50
+    // <1 month       | 0-25
+
     let savingsScore = 0;
-    let savingsLabel = "Low";
+    let savingsLabel = "None";
     let savingsMessage = "Start saving today";
 
-    if (savingsGoal > 0) {
-        const progress = Math.min(1, currentSavings / savingsGoal);
-        savingsScore = progress * 100;
-        if (progress >= 1) {
-            savingsLabel = "Strong";
-            savingsMessage = "Goal achieved!";
-        } else if (progress >= 0.5) {
-            savingsLabel = "Good";
-            savingsMessage = "Halfway to goal";
-        } else if (progress >= 0.2) {
-            savingsLabel = "Fair";
-            savingsMessage = "Making progress";
-        } else {
-            savingsLabel = "Needs Focus";
-            savingsMessage = "Just started";
-        }
-    } else {
-        // Fallback: If no specific goal, look at savings relative to monthly expenses
-        // Ideal: 3-6 months of expenses
-        if (totalExpenses > 0) {
-            const monthsCovered = currentSavings / totalExpenses;
-            if (monthsCovered >= 6) savingsScore = 100;
-            else savingsScore = (monthsCovered / 6) * 100;
+    // Use expenses as baseline, fallback to income estimate
+    const monthlyBurn = totalExpenses > 0 ? totalExpenses : (monthlyIncome > 0 ? monthlyIncome * 0.6 : 20000);
+    const monthsCovered = monthlyBurn > 0 ? currentSavings / monthlyBurn : 0;
 
-            savingsLabel = monthsCovered >= 3 ? "Good" : "Fair";
-            savingsMessage = `${monthsCovered.toFixed(1)} months covered`;
-        } else if (currentSavings > 1000) {
-            savingsScore = 60; // Arbitrary entry level
+    if (currentSavings > 0) {
+        if (monthsCovered >= 12) {
+            savingsScore = 95 + Math.min(5, (monthsCovered - 12) / 24 * 5);
+            savingsLabel = "Excellent";
+            savingsMessage = "12+ months runway";
+        } else if (monthsCovered >= 6) {
+            savingsScore = 75 + ((monthsCovered - 6) / 6) * 20;
+            savingsLabel = "Strong";
+            savingsMessage = `${monthsCovered.toFixed(1)} months runway`;
+        } else if (monthsCovered >= 3) {
+            savingsScore = 50 + ((monthsCovered - 3) / 3) * 25;
+            savingsLabel = "Good";
+            savingsMessage = `${monthsCovered.toFixed(1)} months runway`;
+        } else if (monthsCovered >= 1) {
+            savingsScore = 25 + ((monthsCovered - 1) / 2) * 25;
             savingsLabel = "Fair";
-            savingsMessage = "Good start";
+            savingsMessage = `${monthsCovered.toFixed(1)} months runway`;
+        } else {
+            savingsScore = monthsCovered * 25;
+            savingsLabel = "Low";
+            savingsMessage = "Less than 1 month";
         }
     }
 
-    // --- 3. Debt Pressure (20%) ---
-    // DTI (Debt to Income). 
-    // 0% -> 100 score. >40% -> 0 score.
+    // Bonus if savings goal is set and being achieved
+    if (savingsGoal > 0 && currentSavings > 0) {
+        const goalProgress = currentSavings / savingsGoal;
+        if (goalProgress >= 1) {
+            savingsScore = Math.min(100, savingsScore + 10);
+            savingsMessage = "Goal achieved! 🎉";
+        }
+    }
+
+    // =========================================================================
+    // 3. DEBT PRESSURE (20%)
+    // =========================================================================
+    // DTI Ratio | Score
+    // ----------|-------
+    // 0%        | 100
+    // 0-10%     | 85-100
+    // 10-20%    | 65-85
+    // 20-35%    | 40-65
+    // 35-50%    | 15-40
+    // >50%      | 0-15
+
     let debtScore = 100;
     let debtLabel = "Free";
-    let debtMessage = "Debt free";
+    let debtMessage = "No debt payments";
 
-    if (totalDebt > 0 || debtPaymentMonthly > 0) {
-        if (monthlyIncome > 0) {
-            const dti = debtPaymentMonthly / monthlyIncome;
-            if (dti === 0 && totalDebt > 0) {
-                // Has debt but no payment? Moderate penalty assuming standard terms
-                debtScore = 70;
-                debtLabel = "Manageable";
-                debtMessage = "Active debt";
-            } else {
-                // Linear scale: 0% DTI = 100, 40% DTI = 0
-                debtScore = Math.max(0, 100 - (dti / 0.4) * 100);
+    const hasDebt = totalDebt > 0 || debtPaymentMonthly > 0;
 
-                if (dti < 0.15) {
-                    debtLabel = "Low";
-                    debtMessage = "Manageable payments";
-                } else if (dti < 0.30) {
-                    debtLabel = "Moderate";
-                    debtMessage = "Watch your DTI";
-                } else {
-                    debtLabel = "High";
-                    debtMessage = "Heavy debt burden";
-                }
-            }
+    if (hasDebt && monthlyIncome > 0) {
+        const dti = debtPaymentMonthly / monthlyIncome;
+
+        if (dti <= 0.1) {
+            debtScore = 85 + ((0.1 - dti) / 0.1) * 15;
+            debtLabel = "Minimal";
+            debtMessage = `${Math.round(dti * 100)}% DTI`;
+        } else if (dti <= 0.2) {
+            debtScore = 65 + ((0.2 - dti) / 0.1) * 20;
+            debtLabel = "Low";
+            debtMessage = `${Math.round(dti * 100)}% DTI`;
+        } else if (dti <= 0.35) {
+            debtScore = 40 + ((0.35 - dti) / 0.15) * 25;
+            debtLabel = "Moderate";
+            debtMessage = `${Math.round(dti * 100)}% DTI - manageable`;
+        } else if (dti <= 0.5) {
+            debtScore = 15 + ((0.5 - dti) / 0.15) * 25;
+            debtLabel = "High";
+            debtMessage = `${Math.round(dti * 100)}% DTI - heavy`;
         } else {
-            debtScore = 20; // Has debt, no income? Bad.
+            debtScore = Math.max(0, 15 - ((dti - 0.5) * 30));
             debtLabel = "Critical";
-            debtMessage = "Debt without income";
+            debtMessage = `${Math.round(dti * 100)}% DTI - danger`;
         }
+    } else if (hasDebt && monthlyIncome === 0) {
+        debtScore = 10;
+        debtLabel = "Critical";
+        debtMessage = "Debt without income";
     }
 
-    // --- 4. Goal Progress (20%) ---
-    // Average progress of active goals + bonus for completion
-    let goalScore = 50; // Neutral start
-    let goalLabel = "Steady";
-    let goalMessage = "No active goals";
+    // =========================================================================
+    // 4. GOAL PROGRESS (20%)
+    // =========================================================================
+    let goalScore = 40; // Default if no goals
+    let goalLabel = "Not Set";
+    let goalMessage = "Add goals to track";
 
-    const allGoals = [...shortTermGoals, ...longTermGoals];
+    const allGoals = [...(shortTermGoals || []), ...(longTermGoals || [])];
+
     if (allGoals.length > 0) {
         let totalProgress = 0;
+        let completedCount = 0;
+        let validGoals = 0;
+
         allGoals.forEach(g => {
-            if (g.isCompleted) totalProgress += 1;
-            else if (g.targetAmount > 0) {
+            if (g.isCompleted) {
+                totalProgress += 1;
+                completedCount++;
+                validGoals++;
+            } else if (g.targetAmount > 0) {
                 totalProgress += Math.min(1, (g.currentAmount || 0) / g.targetAmount);
+                validGoals++;
             }
         });
 
-        const avgProgress = totalProgress / allGoals.length;
-        goalScore = avgProgress * 100;
+        if (validGoals > 0) {
+            const avgProgress = totalProgress / validGoals;
+            const completionBonus = Math.min(20, completedCount * 10);
 
-        // Bonus for having more goals? No, stick to progress.
-        if (goalScore >= 80) { goalLabel = "Crushing It"; goalMessage = " Consistent progress"; }
-        else if (goalScore >= 50) { goalLabel = "On Track"; goalMessage = "Keep going"; }
-        else { goalLabel = "Starting"; goalMessage = "Needs momentum"; }
-    } else {
-        goalScore = 0;
-        goalLabel = "None";
-        goalMessage = "Set goals to track";
+            goalScore = Math.min(100, (avgProgress * 80) + completionBonus);
+
+            if (goalScore >= 85) {
+                goalLabel = "Crushing It";
+                goalMessage = "Outstanding progress!";
+            } else if (goalScore >= 65) {
+                goalLabel = "On Track";
+                goalMessage = "Great momentum";
+            } else if (goalScore >= 40) {
+                goalLabel = "Progressing";
+                goalMessage = "Keep going";
+            } else {
+                goalLabel = "Starting";
+                goalMessage = "Building momentum";
+            }
+        }
     }
 
-    // --- Weighted Average ---
-    // If some data is missing (e.g. income is 0), we re-weight or just penalty?
-    // User said "derived entirely from existing". If existing is empty, score is low.
-    // We'll stick to fixed weights for consistency.
+    // =========================================================================
+    // FINAL WEIGHTED SCORE
+    // =========================================================================
 
-    const weightedScore = (
-        (cashFlowScore * 0.30) +
-        (savingsScore * 0.30) +
-        (debtScore * 0.20) +
-        (goalScore * 0.20)
+    // Adjusted weights to prioritize Cash Flow (Stability) more, as requested.
+    // High income/surplus should have a stronger impact on "stability".
+    const weights = {
+        cashFlow: 0.40, // Increased from 0.30
+        savings: 0.20,  // Decreased from 0.30 (Income can compensate for low savings temporarily)
+        debt: 0.20,
+        goals: 0.20
+    };
+
+    // Boost: If user has a massive surplus (e.g. > 500,000 or > 5x expenses), they are very stable.
+    let stabilityBonus = 0;
+    const surplus = monthlyIncome - totalExpenses;
+    if (surplus > 0) {
+        if (surplus > 500000) stabilityBonus += 15;
+        else if (surplus > 100000) stabilityBonus += 10;
+        else if (surplus > 50000) stabilityBonus += 5;
+
+        // Also boost if surplus covers expenses multiple times (High Savings Rate Potential)
+        if (monthlyIncome > 0 && totalExpenses > 0) {
+            const coverage = surplus / totalExpenses;
+            if (coverage > 2) stabilityBonus += 5; // Can save 2x expenses per month
+        }
+    }
+
+    let weightedScore = (
+        (cashFlowScore * weights.cashFlow) +
+        (savingsScore * weights.savings) +
+        (debtScore * weights.debt) +
+        (goalScore * weights.goals)
     );
 
+    // Apply bonus (cap total score at 100)
+    weightedScore += stabilityBonus;
+
+    // Ensure score is properly bounded
+    const finalScore = Math.round(Math.max(0, Math.min(100, weightedScore)));
+
     return {
-        totalScore: Math.round(weightedScore),
+        totalScore: finalScore,
         breakdown: [
             {
                 id: 'cashflow',
                 label: 'Cash Flow',
-                score: Math.round(cashFlowScore),
+                score: Math.round(Math.min(100, Math.max(0, cashFlowScore))),
                 status: cashFlowLabel,
                 description: cashFlowMessage,
-                weight: 30,
-                color: 'var(--color-emerald-500, #10b981)'
+                weight: weights.cashFlow * 100,
+                color: '#10b981' // Emerald
             },
             {
                 id: 'savings',
                 label: 'Savings',
-                score: Math.round(savingsScore),
+                score: Math.round(Math.min(100, Math.max(0, savingsScore))),
                 status: savingsLabel,
                 description: savingsMessage,
-                weight: 30,
-                color: 'var(--color-blue-500, #3b82f6)'
+                weight: weights.savings * 100,
+                color: '#3b82f6' // Blue
             },
             {
                 id: 'debt',
-                label: 'Debt Mgmt',
-                score: Math.round(debtScore),
+                label: 'Debt',
+                score: Math.round(Math.min(100, Math.max(0, debtScore))),
                 status: debtLabel,
                 description: debtMessage,
-                weight: 20,
-                color: 'var(--color-amber-500, #f59e0b)'
+                weight: weights.debt * 100,
+                color: '#f59e0b' // Amber
             },
             {
                 id: 'goals',
                 label: 'Goals',
-                score: Math.round(goalScore),
+                score: Math.round(Math.min(100, Math.max(0, goalScore))),
                 status: goalLabel,
                 description: goalMessage,
-                weight: 20,
-                color: 'var(--color-purple-500, #a855f7)'
+                weight: weights.goals * 100,
+                color: '#a855f7' // Purple
             }
         ]
     };
