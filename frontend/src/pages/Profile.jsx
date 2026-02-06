@@ -799,6 +799,8 @@ const Profile = () => {
                     <select name="incomeSource" value={formData.incomeSource} onChange={handleChange} className="w-full px-3 py-2 border rounded-md bg-background text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                       <option value="Allowance">Allowance</option>
                       <option value="Part-time Job">Part-time Job</option>
+                      <option value="Scholarship">Scholarship</option>
+                      <option value="Full-time Job">Salary</option>
                       <option value="Freelance">Freelance</option>
                       <option value="Internship">Internship</option>
                       <option value="Investment Returns">Investment Returns</option>
