@@ -24,6 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { Separator } from "@/components/ui/separator"
 
 // Menu items. Adapted for Money Council (Fintech for Students)
 const itemGroups = {
@@ -151,45 +152,48 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {Object.entries(itemGroups).map(([key, group]) => (
-          <Collapsible
-            key={key}
-            open={openGroups[key]}
-            onOpenChange={() => toggleGroup(key)}
-            className="group/collapsible"
-          >
-            <SidebarGroup>
-              <SidebarGroupLabel asChild>
-                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md px-2 py-1.5 text-sm">
-                  {group.label}
-                  <ChevronDown className={cn(
-                    "ml-auto h-4 w-4 transition-transform duration-200",
-                    openGroups[key] && "rotate-180"
-                  )} />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive(item.url)}
-                          tooltip={item.title}
-                        >
-                          <Link to={item.url}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
+        {Object.entries(itemGroups).map(([key, group], idx, arr) => (
+          <>
+            <Collapsible
+              key={key}
+              open={openGroups[key]}
+              onOpenChange={() => toggleGroup(key)}
+              className="group/collapsible"
+            >
+              <SidebarGroup>
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md px-2 py-1.5 text-sm">
+                    {group.label}
+                    <ChevronDown className={cn(
+                      "ml-auto h-4 w-4 transition-transform duration-200",
+                      openGroups[key] && "rotate-180"
+                    )} />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {group.items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive(item.url)}
+                            tooltip={item.title}
+                          >
+                            <Link to={item.url}>
+                              <item.icon />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+            {idx < arr.length - 1 && <Separator className="my-2" />}
+          </>
         ))}
       </SidebarContent>
       <SidebarFooter>
