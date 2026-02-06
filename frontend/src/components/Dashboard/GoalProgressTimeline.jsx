@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Flag, CheckCircle2, Circle, Trophy, Navigation } from "lucide-react";
+import { format } from "date-fns";
+import { Flag, CheckCircle2, Circle, Trophy, Navigation, Calendar, Clock } from "lucide-react";
 import { calculateGoalTimeline } from "@/utils/goalTimelineUtils";
 
 export default function GoalProgressTimeline({
     currentSavings = 0,
     shortTermGoals = [],
-    longTermGoals = []
+    longTermGoals = [],
+    monthlyContribution = 0
 }) {
     const [hoveredMilestone, setHoveredMilestone] = useState(null);
 
@@ -17,10 +19,10 @@ export default function GoalProgressTimeline({
         totalTarget,
         progress,
         milestones
-    } = calculateGoalTimeline(currentSavings, shortTermGoals, longTermGoals);
+    } = calculateGoalTimeline(currentSavings, shortTermGoals, longTermGoals, monthlyContribution);
 
     if (!hasGoals) {
-        return null; // Or render an empty state card if preferred, but user requested graceful degradation
+        return null;
     }
 
     return (
@@ -96,7 +98,7 @@ export default function GoalProgressTimeline({
                 </div>
 
                 {/* Dynamic Tooltip/Area for Selected Milestone */}
-                <div className="h-12 mt-2 flex items-center justify-center text-center">
+                <div className="min-h-[3rem] mt-2 flex flex-col items-center justify-center text-center">
                     <AnimatePresence mode="wait">
                         {hoveredMilestone ? (
                             <motion.div
@@ -106,14 +108,30 @@ export default function GoalProgressTimeline({
                                 exit={{ opacity: 0, y: 5 }}
                                 className="bg-popover text-popover-foreground border px-4 py-2 rounded-lg shadow-sm text-sm"
                             >
-                                <span className="font-semibold text-primary">{hoveredMilestone.title}</span>
-                                <span className="mx-2 text-muted-foreground">•</span>
-                                <span>Target: ₹{hoveredMilestone.targetAmount.toLocaleString()}</span>
-                                {hoveredMilestone.isReached && (
-                                    <span className="ml-2 inline-flex items-center text-green-600 text-xs font-bold uppercase tracking-wider">
-                                        <CheckCircle2 className="w-3 h-3 mr-1" /> Achieved
-                                    </span>
-                                )}
+                                <div className="flex items-center gap-2 mb-1 justify-center">
+                                    <span className="font-semibold text-primary">{hoveredMilestone.title}</span>
+                                    <span className="text-muted-foreground mx-1">•</span>
+                                    <span>Target: ₹{hoveredMilestone.targetAmount.toLocaleString()}</span>
+                                    {hoveredMilestone.isReached && (
+                                        <span className="ml-2 inline-flex items-center text-green-600 text-xs font-bold uppercase tracking-wider">
+                                            <CheckCircle2 className="w-3 h-3 mr-1" /> Achieved
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-4 justify-center text-xs">
+                                    {hoveredMilestone.deadline && (
+                                        <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Calendar className="w-3 h-3" />
+                                            Deadline: {format(new Date(hoveredMilestone.deadline), 'MMM d, yyyy')}
+                                        </div>
+                                    )}
+                                    {hoveredMilestone.projectedDate && !hoveredMilestone.isReached && (
+                                        <div className="flex items-center gap-1 text-blue-600 font-medium">
+                                            <Clock className="w-3 h-3" />
+                                            Est. Completion: {format(hoveredMilestone.projectedDate, 'MMM yyyy')}
+                                        </div>
+                                    )}
+                                </div>
                             </motion.div>
                         ) : (
                             <motion.div
@@ -124,7 +142,7 @@ export default function GoalProgressTimeline({
                                 className="text-sm text-muted-foreground italic flex items-center gap-2"
                             >
                                 <Trophy className="w-4 h-4" />
-                                Hover over the dots to see your milestones
+                                Hover over the dots to see your milestones and timeline projection
                             </motion.div>
                         )}
                     </AnimatePresence>

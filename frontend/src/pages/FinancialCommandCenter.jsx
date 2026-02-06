@@ -252,6 +252,7 @@ const RealSnapshotSection = ({ profile }) => {
                     currentSavings={profile.currentSavings}
                     shortTermGoals={profile.shortTermGoals}
                     longTermGoals={profile.longTermGoals}
+                    monthlyContribution={Math.max(0, (profile.monthlyIncome || 0) - ((profile.rentExpense || 0) + (profile.foodExpense || 0) + (profile.transportationExpense || 0) + (profile.utilitiesExpense || 0) + (profile.otherExpenses || 0)))}
                 />
             </div>
         </section>
@@ -525,6 +526,7 @@ const SimulationLabSection = ({ originalProfile }) => {
                         currentSavings={simState.currentSavings}
                         shortTermGoals={simState.shortTermGoals}
                         longTermGoals={simState.longTermGoals}
+                        monthlyContribution={Math.max(0, (simState.monthlyIncome || 0) - (simState.totalExpenses || 0))}
                     />
                 </motion.div>
             )}
