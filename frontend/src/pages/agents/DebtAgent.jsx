@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUser } from "@/context/UserContext";
 import { calculateDebtPayoff } from "@/utils/simulationUtils";
+import { Money } from "@/components/ui/money";
 import axios from "axios";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -65,7 +66,7 @@ const TimelineBar = ({ month, remaining, total, maxDebt }) => {
         <div className="flex flex-col items-center gap-1 group relative">
             {/* Tooltip */}
             <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded border shadow-sm whitespace-nowrap z-10 pointer-events-none">
-                Month {month}: ₹{remaining.toLocaleString()}
+                Month {month}: <Money>₹{remaining.toLocaleString()}</Money>
             </div>
 
             <div className="w-3 md:w-5 bg-muted/30 rounded-t-sm relative flex items-end overflow-hidden ring-1 ring-inset ring-black/5 dark:ring-white/5" style={{ height: '200px' }}>
@@ -394,7 +395,7 @@ export default function DebtAgent() {
                                                     </button>
                                                 </div>
                                                 <div className="flex justify-between items-center text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">
-                                                    <span>₹{debt.balance?.toLocaleString()}</span>
+                                                    <span><Money>₹{debt.balance?.toLocaleString()}</Money></span>
                                                     <span className="text-red-500">{(debt.rate * 100).toFixed(1)}% APR</span>
                                                 </div>
                                                 <div className="mt-2 h-1 w-full bg-muted rounded-full overflow-hidden">
@@ -421,7 +422,7 @@ export default function DebtAgent() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-muted-foreground font-medium uppercase">Monthly Extra</span>
-                                    <Badge variant="destructive" className="font-mono">+ ₹{extraPayment.toLocaleString()}</Badge>
+                                    <Badge variant="destructive" className="font-mono">+ <Money>₹{extraPayment.toLocaleString()}</Money></Badge>
                                 </div>
                                 <Slider
                                     value={[extraPayment]}
@@ -438,10 +439,10 @@ export default function DebtAgent() {
                             <div className="p-4 bg-muted/40 rounded-lg border flex flex-col gap-2">
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm font-medium">Total Monthly Pay</span>
-                                    <span className="font-bold text-lg text-foreground">₹{(totalMinPayment + extraPayment).toLocaleString()}</span>
+                                    <span className="font-bold text-lg text-foreground"><Money>₹{(totalMinPayment + extraPayment).toLocaleString()}</Money></span>
                                 </div>
                                 <div className="text-[10px] text-muted-foreground text-center">
-                                    Includes ₹{totalMinPayment.toLocaleString()} minimums
+                                    Includes <Money>₹{totalMinPayment.toLocaleString()}</Money> minimums
                                 </div>
                             </div>
                         </CardContent>
@@ -490,7 +491,7 @@ export default function DebtAgent() {
                                     <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                                         <div className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-widest mb-1">Total Interest</div>
                                         <div className="text-2xl font-black text-green-800 dark:text-green-300">
-                                            ₹{simResult?.totalInterestPaid.toLocaleString()}
+                                            <Money>₹{simResult?.totalInterestPaid.toLocaleString()}</Money>
                                         </div>
                                         <div className="text-[10px] text-green-600 mt-1 font-medium italic">
                                             Simulation Target
@@ -518,7 +519,7 @@ export default function DebtAgent() {
                                     <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Money Saved</div>
                                         <div className="text-2xl font-black text-green-600">
-                                            ₹{(simResult?.originalTotalInterest - simResult?.totalInterestPaid).toLocaleString()}
+                                            <Money>₹{(simResult?.originalTotalInterest - simResult?.totalInterestPaid).toLocaleString()}</Money>
                                         </div>
                                         <div className="text-[10px] text-green-600 font-bold mt-1">
                                             with extra payments
@@ -608,7 +609,7 @@ export default function DebtAgent() {
                                                 <div>
                                                     <p className="font-bold text-foreground">Optimization Impact</p>
                                                     <p className="text-muted-foreground mt-0.5">
-                                                        The {strategy} method with ₹{extraPayment.toLocaleString()} extra saves you <span className="text-green-600 font-bold">₹{(simResult?.originalTotalInterest - simResult?.totalInterestPaid).toLocaleString()}</span> and <span className="text-green-600 font-bold">{simResult?.originalMonthsToPayoff - simResult?.monthsToPayoff} months</span>.
+                                                        The {strategy} method with <Money>₹{extraPayment.toLocaleString()}</Money> extra saves you <span className="text-green-600 font-bold"><Money>₹{(simResult?.originalTotalInterest - simResult?.totalInterestPaid).toLocaleString()}</Money></span> and <span className="text-green-600 font-bold">{simResult?.originalMonthsToPayoff - simResult?.monthsToPayoff} months</span>.
                                                     </p>
                                                 </div>
                                             </motion.div>
