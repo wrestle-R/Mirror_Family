@@ -501,43 +501,112 @@ export default function InvestmentAgent() {
                     ) : (
                         <ScrollArea className="flex-1 overflow-y-auto w-full">
                             <CardContent className="space-y-8 pt-6 pb-12">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    {/* Summary Column */}
-                                    <div className="space-y-4 md:col-span-1">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                            The Big Picture
-                                        </h4>
-                                        <p className="text-sm leading-relaxed text-foreground/90 bg-muted/30 p-4 rounded-xl border border-primary/10">
-                                            {aiData.summary}
-                                        </p>
-                                    </div>
+                                <div className="space-y-8">
+                                    {/* Top Section: Summary & Tips */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Summary Column */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                                The Big Picture
+                                            </h4>
+                                            <p className="text-sm leading-relaxed text-foreground/90 bg-muted/30 p-4 rounded-xl border border-primary/10">
+                                                {aiData.summary}
+                                            </p>
+                                        </div>
 
-                                    {/* Actions Column */}
-                                    <div className="space-y-4 md:col-span-1">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                            Priority Actions
-                                        </h4>
-                                        <ul className="space-y-3">
-                                            {aiData.tips?.map((tip, i) => (
-                                                <li key={i} className="flex gap-4 text-sm group">
-                                                    <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-110">
-                                                        {i + 1}
-                                                    </span>
-                                                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">{tip}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* Deep Dive Column */}
-                                    <div className="space-y-4 md:col-span-1">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2" id="deep-dive-section">
-                                            Strategic Deep Dive
-                                        </h4>
-                                        <div className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap font-sans bg-secondary/30 p-4 rounded-xl border border-border shadow-inner min-h-[100px]">
-                                            {aiData.details || "No detailed breakdown available for this strategy."}
+                                        {/* Actions Column */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                                Priority Actions
+                                            </h4>
+                                            <ul className="space-y-3">
+                                                {aiData.tips?.map((tip, i) => (
+                                                    <li key={i} className="flex gap-4 text-sm group">
+                                                        <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-110">
+                                                            {i + 1}
+                                                        </span>
+                                                        <span className="text-muted-foreground group-hover:text-foreground transition-colors">{tip}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     </div>
+
+                                    {/* Recommendations Section */}
+                                    {aiData.recommendations && aiData.recommendations.length > 0 ? (
+                                        <div className="space-y-4 pt-4 border-t">
+                                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                                Recommended Investment Options
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                                {aiData.recommendations.map((rec, idx) => (
+                                                    <div key={idx} className="group relative bg-card hover:bg-card/80 border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                                                        <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                                                        <div className="p-5 space-y-4">
+                                                            {/* Header */}
+                                                            <div>
+                                                                <h3 className="font-bold text-lg text-primary group-hover:underline decoration-wavy underline-offset-4">{rec.name}</h3>
+                                                            </div>
+
+                                                            {/* Content Grid */}
+                                                            <div className="space-y-3 text-sm">
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">What is it?</span>
+                                                                    <p className="text-foreground/90 leading-tight">{rec.whatItIs}</p>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-2 bg-muted/30 p-2 rounded-lg">
+                                                                    <div>
+                                                                        <span className="text-[10px] uppercase font-bold text-muted-foreground block">Risk</span>
+                                                                        <span className={`font-medium ${rec.riskLevel?.toLowerCase().includes('low') ? 'text-green-600' : rec.riskLevel?.toLowerCase().includes('high') ? 'text-red-500' : 'text-amber-600'}`}>
+                                                                            {rec.riskLevel}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] uppercase font-bold text-muted-foreground block">Time</span>
+                                                                        <span className="font-medium">{rec.timeHorizon}</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div>
+                                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Why for you?</span>
+                                                                    <p className="text-muted-foreground italic text-xs" dangerouslySetInnerHTML={{ __html: rec.whyRecommended }} />
+                                                                </div>
+
+                                                                <div className="flex gap-2 items-start bg-blue-50 dark:bg-blue-950/20 p-2 rounded border border-blue-100 dark:border-blue-900">
+                                                                    <Wallet className="w-3 h-3 text-blue-500 mt-0.5 shrink-0" />
+                                                                    <div>
+                                                                        <span className="text-[10px] uppercase font-bold text-blue-600 block">Example</span>
+                                                                        <p className="text-xs text-blue-700 dark:text-blue-300">{rec.example}</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex gap-2 items-start bg-amber-50 dark:bg-amber-950/20 p-2 rounded border border-amber-100 dark:border-amber-900">
+                                                                    <ShieldAlert className="w-3 h-3 text-amber-500 mt-0.5 shrink-0" />
+                                                                    <div>
+                                                                        <span className="text-[10px] uppercase font-bold text-amber-600 block">Caution</span>
+                                                                        <p className="text-xs text-amber-700 dark:text-amber-300">{rec.caution}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Fallback legacy content
+                                        aiData.details && (
+                                            <div className="space-y-4 pt-4 border-t">
+                                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                                    Deep Dive
+                                                </h4>
+                                                <div className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap font-sans bg-secondary/30 p-4 rounded-xl border border-border">
+                                                    {aiData.details}
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </CardContent>
                         </ScrollArea>
