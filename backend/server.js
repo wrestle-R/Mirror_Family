@@ -9,6 +9,7 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const agentRoutes = require('./routes/agentRoutes');
 const copilotRoutes = require('./routes/copilotRoutes');
 const groupRoutes = require('./routes/groupRoutes');
+const goalAnalysisRoutes = require('./routes/goalAnalysisRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -25,6 +26,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/copilot', copilotRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/goal-analysis', goalAnalysisRoutes);
 
 
 app.use((req, res, next) => {
