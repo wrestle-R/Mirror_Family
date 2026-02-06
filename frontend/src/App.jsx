@@ -16,6 +16,7 @@ import InvestmentAgent from "@/pages/agents/InvestmentAgent";
 import GoalPlans from "@/pages/GoalPlans";
 import Groups from "@/pages/Groups";
 import GroupDetailsPage from "@/pages/GroupDetailsPage";
+import StockRecommendations from "@/pages/StockRecommendations";
 import NotFound from "@/pages/NotFound";
 
 
@@ -46,6 +47,7 @@ function App() {
               <Route path="goals" element={<GoalPlans />} />
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:groupId" element={<GroupDetailsPage />} />
+              <Route path="stocks" element={<StockRecommendations />} />
               <Route path="agent/budget" element={<BudgetAgent />} />
               <Route path="agent/savings" element={<SavingsAgent />} />
               <Route path="agent/debt" element={<DebtAgent />} />

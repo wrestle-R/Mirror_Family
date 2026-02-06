@@ -1,4 +1,4 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { cn } from "@/lib/utils"
@@ -39,6 +39,11 @@ const items = [
     title: "Split",
     url: "/groups",
     icon: Users,
+  },
+  {
+    title: "Stock Picks",
+    url: "/stocks",
+    icon: CandlestickChart,
   },
   {
     title: "Budget Agent",
