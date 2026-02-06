@@ -235,7 +235,7 @@ function GoalAnalysisSection({ goal }) {
     const fetchAnalysis = async () => {
       // Generate cache key based on goal ID and current amount
       const cacheKey = `goal_analysis_${goal.goalType}_${goal.id}_${goal.currentAmount}_${goal.targetAmount}`;
-      
+
       // Check sessionStorage first
       const cachedData = sessionStorage.getItem(cacheKey);
       if (cachedData) {
@@ -262,7 +262,7 @@ function GoalAnalysisSection({ goal }) {
           firebaseUid: user.uid
         });
         setData(res.data);
-        
+
         // Cache the response
         try {
           sessionStorage.setItem(cacheKey, JSON.stringify({
@@ -287,216 +287,151 @@ function GoalAnalysisSection({ goal }) {
 
   if (loading) {
     return (
-      <div className="p-6 bg-muted/20 rounded-lg border border-primary/10 flex items-center justify-center min-h-[300px]">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Loader2 className="size-5 animate-spin text-primary" />
-          <span className="text-sm text-muted-foreground">Loading insights...</span>
-        </div>
+      <div className="w-full p-4 bg-muted/10 rounded-xl border border-primary/10 flex items-center justify-center gap-3 animate-pulse min-h-[140px]">
+        <Loader2 className="size-5 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Analyzing financial data...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-muted/10 rounded-lg border border-muted flex items-center justify-center min-h-[300px]">
-        <span className="text-sm text-muted-foreground">{error}</span>
+      <div className="w-full p-4 bg-red-500/5 rounded-xl border border-red-500/10 flex items-center justify-center min-h-[140px]">
+        <span className="text-sm font-medium text-red-600">Insights unavailable</span>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="p-6 bg-muted/10 rounded-lg border border-muted flex items-center justify-center min-h-[300px]">
-        <span className="text-sm text-muted-foreground">No data available</span>
+      <div className="w-full p-4 bg-muted/10 rounded-xl border border-dashed border-muted-foreground/20 flex items-center justify-center min-h-[140px]">
+        <span className="text-sm text-muted-foreground">No insights available</span>
       </div>
     );
   }
 
-  const ringData = [{
-      name: 'progress',
-      value: Math.min(100, (goal.currentAmount / goal.targetAmount) * 100),
-      fill: data.forecastStatus === 'At Risk' ? 'hsl(var(--destructive))' : data.forecastStatus === 'Ahead' ? 'hsl(var(--chart-4))' : 'hsl(var(--chart-1))'
-  }];
+  // Robust calculations
+  const target = Math.max(1, toNumber(goal.targetAmount));
+  const current = Math.max(0, toNumber(goal.currentAmount));
+  const progressPercent = Math.min(100, (current / target) * 100);
 
   const statusConfig = {
-    'On Track': { 
-      color: 'hsl(var(--chart-1))', 
+    'On Track': {
+      color: 'hsl(var(--chart-1))',
       textClass: 'text-[hsl(var(--chart-1))]',
       bgClass: 'bg-[hsl(var(--chart-1))]/10',
+      fill: 'hsl(var(--chart-1))',
+      gradientFrom: 'from-[hsl(var(--chart-1))]/20',
       badge: 'default'
     },
-    'At Risk': { 
-      color: 'hsl(var(--destructive))', 
+    'At Risk': {
+      color: 'hsl(var(--destructive))',
       textClass: 'text-destructive',
       bgClass: 'bg-destructive/10',
+      fill: 'hsl(var(--destructive))',
+      gradientFrom: 'from-destructive/20',
       badge: 'destructive'
     },
-    'Ahead': { 
-      color: 'hsl(var(--chart-4))', 
+    'Ahead': {
+      color: 'hsl(var(--chart-4))',
       textClass: 'text-[hsl(var(--chart-4))]',
       bgClass: 'bg-[hsl(var(--chart-4))]/10',
+      fill: 'hsl(var(--chart-4))',
+      gradientFrom: 'from-[hsl(var(--chart-4))]/20',
       badge: 'secondary'
     }
   };
 
   const status = statusConfig[data.forecastStatus] || statusConfig['On Track'];
 
-  // Weekly / streak logic: treat a single-week streak as 1 if any payment made
-  const lastWeek = (data.weeklyData || []).length ? data.weeklyData[data.weeklyData.length - 1] : null;
-  const currentWeekSaved = lastWeek ? toNumber(lastWeek.saved) : 0;
-  const currentWeekTarget = lastWeek ? toNumber(lastWeek.target) : 0;
-  const hasAnyPayment = toNumber(goal.currentAmount) > 0;
-  const isHalfway = toNumber(goal.targetAmount) > 0 && toNumber(goal.currentAmount) / toNumber(goal.targetAmount) >= 0.5;
+  const hasAnyPayment = current > 0;
   const streakCount = hasAnyPayment ? 1 : 0;
+  const isHalfway = progressPercent >= 50;
+
+  // Safe default for weekly data to prevent crash
+  // IF data.weeklyData is missing or empty, generate a synthetic projection
+  let chartData = data.weeklyData;
+  if (!chartData || chartData.length < 2) {
+    // Generate a simple projection: Start (Now) -> End (Deadline or Future)
+    chartData = [
+      { name: 'Start', saved: current, target: current },
+      { name: 'Target', saved: target, target: target }
+    ];
+  }
 
   return (
-    <div className="h-full flex flex-col p-3 bg-linear-to-br from-card via-card to-primary/5 rounded-lg border border-primary/15">
+    <div className="w-full flex flex-col p-5 bg-gradient-to-br from-card via-card to-primary/5 rounded-xl border border-primary/20 shadow-sm mt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-primary/10">
-        <h3 className="text-xs font-semibold flex items-center gap-1.5">
-          <TrendingUp className="size-3.5 text-primary" />
+      <div className="flex items-center justify-between mb-4 border-b border-primary/10 pb-2">
+        <h3 className="text-sm font-bold flex items-center gap-2 text-foreground tracking-tight">
+          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+            <TrendingUp className="size-4" />
+          </div>
           Goal Insights
         </h3>
-        <Badge variant={status.badge} className="text-[10px] px-1.5 py-0.5">
+        <Badge variant={status.badge} className={cn("px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase", status.bgClass, status.textClass, "border-0")}>
           {data.forecastStatus}
         </Badge>
       </div>
 
-      {/* 2x2 Grid Layout */}
-      <div className="grid grid-cols-2 gap-3 flex-1">
-        {/* Box 1: Gauge Chart - Top Left */}
-        <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-secondary/5 p-3 flex flex-col justify-center min-h-[140px]">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Completion</p>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-purple-600 w-12 text-right">{Math.round(ringData[0].value)}%</span>
-            <div className="flex-1">
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-purple-600 rounded-full transition-all" 
-                  style={{ width: `${Math.round(ringData[0].value)}%` }}
-                />
+      {/* 4-Column Grid Layout for Full Width - Optimized 3-Box Layout */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        {/* Box 1: Circular Progress (Enhanced & Larger) */}
+        <div className="col-span-2 rounded-xl border border-primary/10 bg-gradient-to-br from-background to-secondary/5 p-4 flex items-center justify-around relative overflow-hidden group min-h-[140px]">
+          <div className="absolute top-2 left-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest z-10">Target Progress</div>
+
+          <div className="relative size-24 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+            <svg viewBox="0 0 36 36" className="w-full h-full rotate-[-90deg]">
+              <path className="text-muted/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+              <path className={cn("transition-all duration-1000 ease-out", status.textClass)} strokeDasharray={`${progressPercent}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className={cn("text-xl font-bold", status.textClass)}>{Math.round(progressPercent)}%</span>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex flex-col gap-1">
+            <div className="text-xs font-semibold text-muted-foreground">Remaining</div>
+            <div className="text-lg font-bold text-foreground">₹{(target - current).toLocaleString()}</div>
+            <Badge variant="outline" className="w-fit text-[10px] h-5">{progressPercent > 50 ? "Winning" : "Keep Rolling"}</Badge>
+          </div>
+        </div>
+
+        {/* Box 3: Streak */}
+        <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-background to-orange-500/5 p-3 flex flex-col items-center justify-center min-h-[140px]">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 w-full text-center">Consistency</p>
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-foreground">{streakCount}</span>
+              <span className="text-xs font-medium text-muted-foreground">wks</span>
+            </div>
+            <p className="text-[10px] text-orange-600 font-medium mt-1 flex items-center gap-1">
+              <Flame className="size-3 fill-orange-600" />
+              Streak
+            </p>
+          </div>
+        </div>
+
+        {/* Box 4: Milestones */}
+        <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-background to-primary/5 p-3 flex flex-col min-h-[140px]">
+          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 w-full text-center">Milestones</div>
+          <div className="flex-1 flex items-center justify-center gap-3">
+            <div className="flex flex-col items-center gap-1">
+              <div className={cn("size-9 rounded-full flex items-center justify-center border transition-all duration-300", hasAnyPayment ? "bg-amber-100 border-amber-200 text-amber-600 shadow-sm" : "bg-muted/50 border-muted text-muted-foreground/50 grayscale")}>
+                <Trophy className="size-4" />
               </div>
+              <span className="text-[8px] font-medium text-muted-foreground">Started</span>
             </div>
-          </div>
-          <p className={cn("text-xs font-bold mt-3", status.textClass)}>
-            {data.forecastStatus}
-          </p>
-        </div>
-
-        {/* Box 2: Projection Paths - Top Right */}
-        <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-accent/5 p-3 flex flex-col min-h-[140px]">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Projection</p>
-          <div className="h-12 w-full flex-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.weeklyData || []}>
-                <defs>
-                  <linearGradient id="colorAgg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorCur" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <Area 
-                  type="monotone" 
-                  dataKey="target" 
-                  stroke="hsl(var(--chart-2))" 
-                  fillOpacity={1} 
-                  fill="url(#colorAgg)" 
-                  strokeWidth={1.5}
-                  isAnimationActive={false}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="saved" 
-                  stroke="hsl(var(--chart-1))" 
-                  fillOpacity={1} 
-                  fill="url(#colorCur)" 
-                  strokeWidth={1.5} 
-                  strokeDasharray="3 3"
-                  isAnimationActive={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex justify-between items-center mt-1 px-0.5 text-[9px] text-muted-foreground">
-            <span>Aggressive</span>
-            <span>Current</span>
-          </div>
-        </div>
-
-        {/* Box 3: Week streak - Bottom Left */}
-        <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-orange/5 p-3 flex flex-col items-center justify-center min-h-[140px]">
-          <div className="w-full text-center">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Week streak</p>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-primary">{streakCount}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">{hasAnyPayment ? "Weeks" : "no payments yet"}</p>
+            <div className="flex flex-col items-center gap-1">
+              <div className={cn("size-9 rounded-full flex items-center justify-center border transition-all duration-300", isHalfway ? "bg-emerald-100 border-emerald-200 text-emerald-600 shadow-sm" : "bg-muted/50 border-muted text-muted-foreground/50 grayscale")}>
+                <Star className="size-4" />
+              </div>
+              <span className="text-[8px] font-medium text-muted-foreground">Halfway</span>
             </div>
           </div>
         </div>
 
-        {/* Box 4: Achievements - Bottom Right */}
-        <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-primary/5 p-3 flex flex-col items-center justify-between min-h-[140px]">
-          <div className="w-full text-center">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Achievements</p>
-          </div>
-            <div className="flex gap-2 mb-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className={cn(
-                    "size-8 rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer border",
-                    hasAnyPayment
-                      ? "bg-linear-to-br from-yellow-500/20 to-amber-500/20 border-yellow-500/40"
-                      : "bg-muted/30 border-muted/50"
-                  )}>
-                    <Trophy className={cn(
-                      "size-4",
-                      hasAnyPayment ? "text-amber-600" : "text-muted-foreground"
-                    )} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-[9px]">First Payments</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className={cn(
-                    "size-8 rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer border",
-                    isHalfway
-                      ? "bg-linear-to-br from-emerald-500/20 to-green-500/20 border-emerald-500/40"
-                      : "bg-muted/30 border-muted/50"
-                  )}>
-                    <Star className={cn(
-                      "size-4",
-                      isHalfway ? "text-emerald-600" : "text-muted-foreground"
-                    )} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-[9px]">50% done</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="w-full px-2 py-1.5 rounded-sm bg-linear-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 flex items-center justify-between">
-            <Flame className="size-4 text-orange-600" />
-            <div className="flex-1 ml-1">
-              <p className="text-[8px] text-muted-foreground">Streak</p>
-              <p className="text-xs font-bold text-orange-600">
-                {streakCount === 0 ? "0 weeks" : streakCount === 1 ? "1 week" : `${streakCount} weeks`}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -548,11 +483,12 @@ function GoalCard({ goal, onUpdateAmount, onToggleDone }) {
         </div>
       </CardHeader>
 
-      {/* Goal Content: Left + Right Layout */}
+      {/* Goal Content: Stacked Layout */}
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-6 h-full">
-          {/* LEFT: Goal Details */}
-          <div className="space-y-5">
+        <div className="flex flex-col gap-0">
+
+          {/* TOP: Goal Details */}
+          <div className="space-y-6">
             {/* Target & Saved */}
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Overview</p>
@@ -613,9 +549,9 @@ function GoalCard({ goal, onUpdateAmount, onToggleDone }) {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onUpdateAmount(goal)}
                 className="flex-1 text-xs"
               >
@@ -633,8 +569,8 @@ function GoalCard({ goal, onUpdateAmount, onToggleDone }) {
             </div>
           </div>
 
-          {/* RIGHT: Goal Insights - Full Height */}
-          <div className="min-h-full">
+          {/* BOTTOM: Goal Insights - Full Width */}
+          <div className="flex-1 mt-6">
             <GoalAnalysisSection goal={goal} />
           </div>
         </div>
@@ -1016,8 +952,8 @@ export default function GoalPlans() {
                               ev.kind === "deadline"
                                 ? "bg-red-500/10 text-red-600"
                                 : ev.kind === "set-deadline"
-                                ? "bg-amber-500/10 text-amber-700"
-                                : "bg-green-500/10 text-green-700"
+                                  ? "bg-amber-500/10 text-amber-700"
+                                  : "bg-green-500/10 text-green-700"
                             )}
                             title={`${ev.title} — ${ev.subtitle}`}
                           >
@@ -1090,8 +1026,8 @@ export default function GoalPlans() {
                       <div className="mt-2 flex items-center gap-3">
                         <span className="text-sm font-bold text-purple-600 w-10 text-right">{progress}%</span>
                         <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-purple-600 rounded-full transition-all" 
+                          <div
+                            className="h-full bg-purple-600 rounded-full transition-all"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
