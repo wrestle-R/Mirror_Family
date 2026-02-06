@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import groupsApi from '@/config/groupsApi';
+import { Money } from '@/components/ui/money';
 import {
   BarChart,
   Bar,
@@ -262,7 +263,7 @@ export default function GroupAnalytics({ groupId, group, refreshKey }) {
                 <Receipt className="w-12 h-12" />
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1 uppercase tracking-wider">Total Volume</h3>
-              <p className="text-3xl font-black text-primary">₹{stats.totalExpenses.toLocaleString('en-IN')}</p>
+              <p className="text-3xl font-black text-primary"><Money>₹{stats.totalExpenses.toLocaleString('en-IN')}</Money></p>
               <div className="mt-2 text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary w-fit">
                 {stats.count} transaction{stats.count !== 1 ? 's' : ''}
               </div>
@@ -273,7 +274,7 @@ export default function GroupAnalytics({ groupId, group, refreshKey }) {
                 <TrendingUp className="w-12 h-12" />
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1 uppercase tracking-wider">Avg. Ticket</h3>
-              <p className="text-3xl font-black text-blue-600 dark:text-blue-400">₹{Math.round(stats.average).toLocaleString('en-IN')}</p>
+              <p className="text-3xl font-black text-blue-600 dark:text-blue-400"><Money>₹{Math.round(stats.average).toLocaleString('en-IN')}</Money></p>
               <p className="text-xs text-muted-foreground mt-2">Value per expense</p>
             </Card>
 
@@ -334,7 +335,7 @@ export default function GroupAnalytics({ groupId, group, refreshKey }) {
                         <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                         <span className="font-semibold capitalize text-sm">{cat.name}</span>
                       </div>
-                      <span className="font-bold text-primary">₹{cat.total.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-primary"><Money>₹{cat.total.toLocaleString('en-IN')}</Money></span>
                     </div>
                     <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                       <div 

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom
 import { ThemeProvider } from "@/context/ThemeContext";
 import { UserProvider } from "@/context/UserContext";
 import { SandboxProvider } from "@/context/SandboxContext";
+import { StealthProvider } from "@/context/StealthContext";
 import { Toaster } from "@/components/ui/sonner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Dashboard/Layout";
@@ -31,6 +32,7 @@ function App() {
   return (
     <ThemeProvider>
       <UserProvider>
+        <StealthProvider>
         <SandboxProvider>
           <Router>
             <Routes>
@@ -65,6 +67,7 @@ function App() {
         </Router>
         <Toaster position="top-right" richColors />
         </SandboxProvider>
+        </StealthProvider>
       </UserProvider>
     </ThemeProvider>
   );

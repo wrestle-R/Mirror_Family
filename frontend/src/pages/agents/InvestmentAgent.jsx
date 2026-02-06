@@ -38,6 +38,7 @@ import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Money } from "@/components/ui/money";
 import {
     RISK_PROFILES,
     calculateWealthProjection,
@@ -51,7 +52,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const SourceNode = ({ data }) => (
     <div className="p-4 rounded-xl shadow-lg border bg-card w-52 text-center ring-2 ring-primary/20 backdrop-blur-sm">
         <div className="font-semibold text-sm text-foreground mb-1">Monthly Investment</div>
-        <div className="text-3xl font-black text-primary tracking-tight">₹{data.amount.toLocaleString()}</div>
+        <div className="text-3xl font-black text-primary tracking-tight"><Money>₹{data.amount.toLocaleString()}</Money></div>
         <div className="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">SIP Amount</div>
         <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-primary border-2 border-background" />
     </div>
@@ -73,7 +74,7 @@ const BucketNode = ({ data }) => {
                     {data.allocation}% Alloc
                 </Badge>
             </div>
-            <div className="text-2xl font-black tracking-tight">₹{Math.round(data.value).toLocaleString()}</div>
+            <div className="text-2xl font-black tracking-tight"><Money>₹{Math.round(data.value).toLocaleString()}</Money></div>
             <div className="mt-3 text-[10px] leading-tight opacity-90 px-1 font-medium bg-background/30 py-1 rounded">
                 projected wealth
             </div>
@@ -99,7 +100,7 @@ const GoalNode = ({ data }) => {
                 <Target className="w-5 h-5" />
             </div>
             <div className="font-bold text-sm px-2 break-words max-w-full leading-tight mb-1">{data.label}</div>
-            <div className="text-[10px] text-muted-foreground font-mono">Target: ₹{data.target.toLocaleString()}</div>
+            <div className="text-[10px] text-muted-foreground font-mono">Target: <Money>₹{data.target.toLocaleString()}</Money></div>
             <Badge variant={data.achieved ? "default" : "destructive"} className="mt-2 text-[10px] h-5 px-2 pointer-events-none">
                 {data.achieved ? "Achievable" : "Shortfall"}
             </Badge>
@@ -369,7 +370,7 @@ export default function InvestmentAgent() {
                                     <SelectContent>
                                         <SelectItem value="all">Overview (All Goals)</SelectItem>
                                         {goals.map(g => (
-                                            <SelectItem key={g.id} value={g.id}>{g.label} (₹{(g.target / 100000).toFixed(1)}L)</SelectItem>
+                                            <SelectItem key={g.id} value={g.id}>{g.label} (<Money>₹{(g.target / 100000).toFixed(1)}L</Money>)</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -379,7 +380,7 @@ export default function InvestmentAgent() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-medium">Monthly SIP</label>
-                                    <Badge variant="secondary" className="font-mono">₹{monthlyInvestment.toLocaleString()}</Badge>
+                                    <Badge variant="secondary" className="font-mono"><Money>₹{monthlyInvestment.toLocaleString()}</Money></Badge>
                                 </div>
                                 <Slider
                                     value={[monthlyInvestment]}
@@ -429,13 +430,13 @@ export default function InvestmentAgent() {
                             <div className="flex gap-8 items-center">
                                 <div>
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">Projected Total</span>
-                                    <div className="text-3xl font-black text-foreground tracking-tight">₹{(projection.totalValue / 100000).toFixed(2)} L</div>
+                                    <div className="text-3xl font-black text-foreground tracking-tight"><Money>₹{(projection.totalValue / 100000).toFixed(2)} L</Money></div>
                                 </div>
                                 <div>
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">Growth</span>
                                     <div className="text-xl font-bold text-green-600 tracking-tight flex items-center gap-1">
                                         <TrendingUp className="w-4 h-4" />
-                                        +₹{(projection.gain / 100000).toFixed(2)} L
+                                        <Money>+₹{(projection.gain / 100000).toFixed(2)} L</Money>
                                     </div>
                                 </div>
                             </div>
@@ -447,8 +448,8 @@ export default function InvestmentAgent() {
                                         <p className="text-sm font-bold text-foreground">{selectedGoalObj.label}</p>
                                         <p className="text-xs text-muted-foreground">
                                             {isGoalMet
-                                                ? `Surplus: ₹${(projection.totalValue - selectedGoalObj.target).toLocaleString()}`
-                                                : `Shortfall: ₹${shortfall.toLocaleString()}`}
+                                                ? <><Money>Surplus: ₹{(projection.totalValue - selectedGoalObj.target).toLocaleString()}</Money></>
+                                                : <><Money>Shortfall: ₹{shortfall.toLocaleString()}</Money></>}
                                         </p>
                                     </div>
                                 </div>

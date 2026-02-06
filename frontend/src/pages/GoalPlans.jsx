@@ -41,6 +41,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Money } from "@/components/ui/money";
 import {
   Dialog,
   DialogContent,
@@ -393,7 +394,7 @@ function GoalAnalysisSection({ goal }) {
 
           <div className="hidden sm:flex flex-col gap-1">
             <div className="text-xs font-semibold text-muted-foreground">Remaining</div>
-            <div className="text-lg font-bold text-foreground">₹{(target - current).toLocaleString()}</div>
+            <div className="text-lg font-bold text-foreground"><Money>₹{(target - current).toLocaleString()}</Money></div>
             <Badge variant="outline" className="w-fit text-[10px] h-5">{progressPercent > 50 ? "Winning" : "Keep Rolling"}</Badge>
           </div>
         </div>
@@ -495,11 +496,11 @@ function GoalCard({ goal, onUpdateAmount, onToggleDone }) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-secondary/5 p-4">
                   <p className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Target</p>
-                  <p className="text-lg font-bold text-foreground mt-1">₹{Math.max(0, toNumber(goal.targetAmount)).toLocaleString()}</p>
+                  <p className="text-lg font-bold text-foreground mt-1"><Money>₹{Math.max(0, toNumber(goal.targetAmount)).toLocaleString()}</Money></p>
                 </div>
                 <div className="rounded-md border border-primary/10 bg-linear-to-br from-card to-accent/5 p-4">
                   <p className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Saved</p>
-                  <p className="text-lg font-bold text-primary mt-1">₹{Math.max(0, toNumber(goal.currentAmount)).toLocaleString()}</p>
+                  <p className="text-lg font-bold text-primary mt-1"><Money>₹{Math.max(0, toNumber(goal.currentAmount)).toLocaleString()}</Money></p>
                 </div>
               </div>
             </div>
@@ -534,12 +535,12 @@ function GoalCard({ goal, onUpdateAmount, onToggleDone }) {
                       "text-sm font-bold mt-1",
                       plan.status === "overdue" ? "text-red-600" : plan.status === "tight" ? "text-orange-600" : "text-green-600"
                     )}>
-                      ₹{plan.perWeek.toLocaleString()}/week
+                      <Money>₹{plan.perWeek.toLocaleString()}/week</Money>
                     </p>
                   </div>
                   <div>
                     <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Remaining</p>
-                    <p className="text-sm font-bold mt-1">₹{plan.remaining.toLocaleString()}</p>
+                    <p className="text-sm font-bold mt-1"><Money>₹{plan.remaining.toLocaleString()}</Money></p>
                   </div>
                 </div>
               ) : (
@@ -1021,7 +1022,7 @@ export default function GoalPlans() {
                     <div key={`${goal.goalType}:${goal.id}`} className="rounded-lg border p-3">
                       <p className="text-sm font-semibold truncate">{goal.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {plan.status === "overdue" ? "Overdue" : `${plan.daysLeft} days left`} • Need ₹{(plan.perWeek || 0).toLocaleString()}/week
+                        {plan.status === "overdue" ? "Overdue" : `${plan.daysLeft} days left`} • Need <Money>₹{(plan.perWeek || 0).toLocaleString()}/week</Money>
                       </p>
                       <div className="mt-2 flex items-center gap-3">
                         <span className="text-sm font-bold text-purple-600 w-10 text-right">{progress}%</span>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Calendar, CheckCircle2 } from 'lucide-react';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
+import { Money } from '@/components/ui/money';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -100,7 +101,7 @@ export default function ExpenseList({ expenses, loading, currentUserId, groupId,
                   </div>
                   <div className="text-right">
                     <div className="text-xl font-bold">
-                      ₹{expense.amount.toLocaleString('en-IN')}
+                      <Money>₹{expense.amount.toLocaleString('en-IN')}</Money>
                     </div>
                   </div>
                 </div>
@@ -121,7 +122,7 @@ export default function ExpenseList({ expenses, loading, currentUserId, groupId,
                     <div className="flex flex-wrap gap-2">
                       {expense.splits.map((split) => (
                         <Badge key={split.member._id} variant="secondary" className="text-xs">
-                          {split.member.name}: ₹{split.amount.toLocaleString('en-IN')}
+                          {split.member.name}: <Money>₹{split.amount.toLocaleString('en-IN')}</Money>
                           {split.settled ? (
                             <span className="ml-2 text-xs text-green-500 font-medium">(Paid)</span>
                           ) : (

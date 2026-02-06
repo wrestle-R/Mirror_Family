@@ -23,6 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
 import { Loader2, X, UploadCloud, ScanLine, Sparkles, FileText } from 'lucide-react';
+import { Money } from '@/components/ui/money';
 
 const CATEGORIES = [
   'food',
@@ -386,7 +387,7 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
                         </p>
                         {isSelected && (
                           <p className="text-xs font-bold text-primary mt-1">
-                            ₹{splitAmount}
+                            <Money>₹{splitAmount}</Money>
                           </p>
                         )}
                       </div>
@@ -396,7 +397,7 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
               })}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {selectedMembers.length} member(s) selected · ₹{splitAmount} per person
+              {selectedMembers.length} member(s) selected · <Money>₹{splitAmount}</Money> per person
             </p>
           </div>
 

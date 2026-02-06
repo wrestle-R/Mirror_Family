@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, UserMinus, User } from 'lucide-react';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
+import { Money } from '@/components/ui/money';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,11 +90,8 @@ export default function MemberList({ group, balances, currentUserId, isOwner, on
                 <div className="text-right">
                   <div className="text-sm text-muted-foreground">Net Balance</div>
                   <div className={`text-xl font-bold ${net > 0 ? 'text-green-500' : net < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    {net > 0 ? '+' : ''}₹{net.toLocaleString('en-IN')}
+                    <Money>{net > 0 ? '+' : ''}₹{net.toLocaleString('en-IN')}</Money>
                   </div>
-                </div>
-
-                {isOwner && !isMemberOwner && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
@@ -118,7 +116,7 @@ export default function MemberList({ group, balances, currentUserId, isOwner, on
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                )}
+                </div>
               </div>
             </div>
           </Card>

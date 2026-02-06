@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Wallet, Calendar } from 'lucide-react';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
+import { Money } from '@/components/ui/money';
 
 export default function GroupTransactions({ groupId, refreshKey }) {
   const [transactions, setTransactions] = useState([]);
@@ -66,7 +67,7 @@ export default function GroupTransactions({ groupId, refreshKey }) {
 
             <div className="text-right ml-4">
               <p className={`text-lg font-bold ${tx.type === 'income' ? 'text-green-600' : tx.type === 'expense' ? 'text-red-600' : 'text-primary'}`}>
-                {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}₹{Number(tx.amount).toLocaleString()}
+                <Money>{tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}₹{Number(tx.amount).toLocaleString()}</Money>
               </p>
             </div>
           </div>

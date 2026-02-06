@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Money } from "@/components/ui/money";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -336,15 +337,15 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Monthly Income:</span>
-                      <span className="font-semibold">₹{context.profile.monthlyIncome?.toLocaleString('en-IN') || 0}</span>
+                      <span className="font-semibold"><Money>₹{context.profile.monthlyIncome?.toLocaleString('en-IN') || 0}</Money></span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Current Savings:</span>
-                      <span className="font-semibold text-green-600">₹{context.profile.currentSavings?.toLocaleString('en-IN') || 0}</span>
+                      <span className="font-semibold text-green-600"><Money>₹{context.profile.currentSavings?.toLocaleString('en-IN') || 0}</Money></span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Expenses:</span>
-                      <span className="font-semibold text-red-600">₹{context.thisMonth?.expenses?.toLocaleString('en-IN') || 0}</span>
+                      <span className="font-semibold text-red-600"><Money>₹{context.thisMonth?.expenses?.toLocaleString('en-IN') || 0}</Money></span>
                     </div>
                     {context.thisMonth && (
                       <>
@@ -360,7 +361,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
                               "font-semibold",
                               (context.thisMonth.income - context.thisMonth.expenses) >= 0 ? "text-green-600" : "text-red-600"
                             )}>
-                              ₹{((context.thisMonth.income - context.thisMonth.expenses) || 0).toLocaleString('en-IN')}
+                              <Money>₹{((context.thisMonth.income - context.thisMonth.expenses) || 0).toLocaleString('en-IN')}</Money>
                             </span>
                           </div>
                         </div>
@@ -369,7 +370,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
                     {context.profile.totalDebt > 0 && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Total Debt:</span>
-                        <span className="font-semibold text-orange-600">₹{context.profile.totalDebt?.toLocaleString('en-IN')}</span>
+                        <span className="font-semibold text-orange-600"><Money>₹{context.profile.totalDebt?.toLocaleString('en-IN')}</Money></span>
                       </div>
                     )}
                   </div>

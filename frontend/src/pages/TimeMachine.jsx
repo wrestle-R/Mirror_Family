@@ -15,6 +15,7 @@ import {
   ChevronRight, Rocket, AlertTriangle, CheckCircle2, DollarSign, Brain,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -228,19 +229,19 @@ const TimeMachine = () => {
             <div className="grid md:grid-cols-3 gap-8 items-center">
               <div className="text-center md:text-left">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Current Habits</p>
-                <p className="text-3xl font-bold text-destructive">{fmtLakh(currentNW)}</p>
+                <p className="text-3xl font-bold text-destructive"><Money>{fmtLakh(currentNW)}</Money></p>
                 <p className="text-xs text-muted-foreground mt-1">Net worth in 2036</p>
               </div>
               <div className="text-center">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Wealth Gap</p>
                 <p className="text-5xl md:text-6xl font-bold text-foreground">
-                  {fmtLakh(wealthGap)}
+                  <Money>{fmtLakh(wealthGap)}</Money>
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">Potential gain with optimization</p>
               </div>
               <div className="text-center md:text-right">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Optimized Path</p>
-                <p className="text-3xl font-bold text-primary">{fmtLakh(optimizedNW)}</p>
+                <p className="text-3xl font-bold text-primary"><Money>{fmtLakh(optimizedNW)}</Money></p>
                 <p className="text-xs text-muted-foreground mt-1">Net worth in 2036</p>
               </div>
             </div>
@@ -257,7 +258,7 @@ const TimeMachine = () => {
                 <Rocket className="w-5 h-5 text-primary" />
                 Your Optimized Financial Plan
               </CardTitle>
-              <CardDescription>Follow these strategies to unlock {fmtLakh(wealthGap)} in additional wealth by 2036</CardDescription>
+              <CardDescription>Follow these strategies to unlock <Money>{fmtLakh(wealthGap)}</Money> in additional wealth by 2036</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -453,21 +454,21 @@ const TimeMachine = () => {
                   <div className="lg:col-span-2 flex flex-col justify-center gap-4">
                     <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
                       <p className="text-xs uppercase tracking-wider text-destructive font-bold">Current Monthly</p>
-                      <p className="text-2xl font-black text-destructive mt-1">{fmt(ob.todayTotal)}</p>
+                      <p className="text-2xl font-black text-destructive mt-1"><Money>{fmt(ob.todayTotal)}</Money></p>
                     </div>
                     <div className="flex items-center justify-center">
                       <ArrowRight className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
                       <p className="text-xs uppercase tracking-wider text-primary font-bold">Optimized Monthly</p>
-                      <p className="text-2xl font-black text-primary mt-1">{fmt(ob.todayOptimizedTotal)}</p>
+                      <p className="text-2xl font-black text-primary mt-1"><Money>{fmt(ob.todayOptimizedTotal)}</Money></p>
                     </div>
                     <div className="p-4 rounded-xl bg-accent border border-border text-center">
                       <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Monthly Savings Unlocked</p>
                       <p className="text-3xl font-black text-primary mt-1">
-                        {fmt(ob.monthlySavingsUnlocked)}
+                        <Money>{fmt(ob.monthlySavingsUnlocked)}</Money>
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">That's {fmt(ob.monthlySavingsUnlocked * 12)}/year extra</p>
+                      <p className="text-xs text-muted-foreground mt-1">That's <Money>{fmt(ob.monthlySavingsUnlocked * 12)}</Money>/year extra</p>
                     </div>
                   </div>
                 </div>
@@ -550,11 +551,11 @@ const TimeMachine = () => {
                   <div className="mt-4 grid grid-cols-2 gap-3 text-center">
                     <div className="p-3 rounded-lg bg-background border border-destructive/10">
                       <p className="text-xs text-muted-foreground">Net Worth</p>
-                      <p className="text-lg font-bold text-destructive">{fmtLakh(currentNW)}</p>
+                      <p className="text-lg font-bold text-destructive"><Money>{fmtLakh(currentNW)}</Money></p>
                     </div>
                     <div className="p-3 rounded-lg bg-background border border-destructive/10">
                       <p className="text-xs text-muted-foreground">Expenses/mo</p>
-                      <p className="text-lg font-bold text-destructive">{cards ? fmt(cards.current.monthlyExpenses) : "—"}</p>
+                      <p className="text-lg font-bold text-destructive"><Money>{cards ? fmt(cards.current.monthlyExpenses) : "—"}</Money></p>
                     </div>
                   </div>
                 </div>
@@ -573,11 +574,11 @@ const TimeMachine = () => {
                   <div className="mt-4 grid grid-cols-2 gap-3 text-center">
                     <div className="p-3 rounded-lg bg-background border border-primary/10">
                       <p className="text-xs text-muted-foreground">Net Worth</p>
-                      <p className="text-lg font-bold text-primary">{fmtLakh(optimizedNW)}</p>
+                      <p className="text-lg font-bold text-primary"><Money>{fmtLakh(optimizedNW)}</Money></p>
                     </div>
                     <div className="p-3 rounded-lg bg-background border border-primary/10">
                       <p className="text-xs text-muted-foreground">Expenses/mo</p>
-                      <p className="text-lg font-bold text-primary">{cards ? fmt(cards.optimized.monthlyExpenses) : "—"}</p>
+                      <p className="text-lg font-bold text-primary"><Money>{cards ? fmt(cards.optimized.monthlyExpenses) : "—"}</Money></p>
                     </div>
                   </div>
                 </div>
@@ -648,7 +649,7 @@ const StatCard = ({ title, value, icon, color, sub }) => {
         <span className={iconColor[color]}>{icon}</span>
       </CardHeader>
       <CardContent>
-        <div className={`text-2xl font-bold ${colorMap[color]?.split(" ")[1] || ""}`}>{value}</div>
+        <div className={`text-2xl font-bold ${colorMap[color]?.split(" ")[1] || ""}`}><Money>{value}</Money></div>
         {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
       </CardContent>
     </Card>

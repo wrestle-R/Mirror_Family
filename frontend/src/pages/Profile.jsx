@@ -21,6 +21,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Money } from "@/components/ui/money";
 import VoiceOnboarding from "@/components/VoiceOnboarding";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -501,8 +502,8 @@ const Profile = () => {
               {goal.targetAmount > 0 && (
                 <div className="mt-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <span>₹{goal.currentAmount?.toLocaleString() || 0}</span>
-                    <span className="text-muted-foreground">₹{goal.targetAmount.toLocaleString()}</span>
+                    <span><Money>₹{goal.currentAmount?.toLocaleString() || 0}</Money></span>
+                    <span className="text-muted-foreground"><Money>₹{goal.targetAmount.toLocaleString()}</Money></span>
                   </div>
                   <Progress value={progress} className="h-2" />
                 </div>

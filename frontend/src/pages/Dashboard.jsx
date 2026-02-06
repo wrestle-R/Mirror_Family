@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Money } from "@/components/ui/money";
 import FinancialHealthScoreCard from "@/components/Dashboard/FinancialHealthScoreCard";
 import GoalProgressTimeline from "@/components/Dashboard/GoalProgressTimeline";
 import { Button } from "@/components/ui/button";
@@ -395,7 +396,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                ₹{(transactionStats?.totalIncome || profileData?.monthlyIncome || 0).toLocaleString()}
+                <Money>₹{(transactionStats?.totalIncome || profileData?.monthlyIncome || 0).toLocaleString()}</Money>
               </div>
               <p className="text-xs text-muted-foreground">
                 {profileData?.incomeSource || 'Set up income source'}
@@ -411,7 +412,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                ₹{(transactionStats?.totalExpense || totalExpenses || 0).toLocaleString()}
+                <Money>₹{(transactionStats?.totalExpense || totalExpenses || 0).toLocaleString()}</Money>
               </div>
               <p className="text-xs text-muted-foreground">
                 {transactionStats?.transactionCount || 0} transactions this month
@@ -427,7 +428,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString()}
+                <Money>{netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString()}</Money>
               </div>
               <p className="text-xs text-muted-foreground">
                 {netBalance >= 0 ? 'You\'re in good shape!' : 'Spending more than earning'}
@@ -443,13 +444,13 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
-                ₹{(profileData?.currentSavings || 0).toLocaleString()}
+                <Money>₹{(profileData?.currentSavings || 0).toLocaleString()}</Money>
               </div>
               {profileData?.savingsGoal > 0 && (
                 <div className="mt-2">
                   <div className="flex justify-between text-xs mb-1">
                     <span>{savingsProgress}% of goal</span>
-                    <span>₹{profileData.savingsGoal.toLocaleString()}</span>
+                    <Money><span>₹{profileData.savingsGoal.toLocaleString()}</span></Money>
                   </div>
                   <Progress value={savingsProgress} className="h-1.5" />
                 </div>
@@ -598,8 +599,8 @@ const Dashboard = () => {
                         className={`h-3 ${budgetUsed > 80 ? '[&>div]:bg-red-500' : budgetUsed > 50 ? '[&>div]:bg-yellow-500' : ''}`}
                       />
                       <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                        <span>₹{totalExpenses.toLocaleString()} spent</span>
-                        <span>₹{profileData.monthlyBudget.toLocaleString()} budget</span>
+                        <Money><span>₹{totalExpenses.toLocaleString()} spent</span></Money>
+                        <Money><span>₹{profileData.monthlyBudget.toLocaleString()} budget</span></Money>
                       </div>
                     </div>
 
@@ -609,31 +610,31 @@ const Dashboard = () => {
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Food</span>
-                          <span>₹{(profileData.foodExpense || 0).toLocaleString()}</span>
+                          <Money><span>₹{(profileData.foodExpense || 0).toLocaleString()}</span></Money>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Rent</span>
-                          <span>₹{(profileData.rentExpense || 0).toLocaleString()}</span>
+                          <Money><span>₹{(profileData.rentExpense || 0).toLocaleString()}</span></Money>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Transport</span>
-                          <span>₹{(profileData.transportationExpense || 0).toLocaleString()}</span>
+                          <Money><span>₹{(profileData.transportationExpense || 0).toLocaleString()}</span></Money>
                         </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Utilities</span>
-                          <span>₹{(profileData.utilitiesExpense || 0).toLocaleString()}</span>
+                          <Money><span>₹{(profileData.utilitiesExpense || 0).toLocaleString()}</span></Money>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Other</span>
-                          <span>₹{(profileData.otherExpenses || 0).toLocaleString()}</span>
+                          <Money><span>₹{(profileData.otherExpenses || 0).toLocaleString()}</span></Money>
                         </div>
                         <div className="flex justify-between font-medium">
                           <span>Remaining</span>
-                          <span className={profileData.monthlyBudget - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          <Money><span className={profileData.monthlyBudget - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}>
                             ₹{(profileData.monthlyBudget - totalExpenses).toLocaleString()}
-                          </span>
+                          </span></Money>
                         </div>
                       </div>
                     </div>
@@ -687,9 +688,9 @@ const Dashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <span className={`font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        <Money><span className={`font-bold ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                           {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                        </span>
+                        </span></Money>
                       </div>
                     ))}
                   </div>
@@ -735,8 +736,8 @@ const Dashboard = () => {
                         {goal.targetAmount > 0 && (
                           <div className="mt-1.5">
                             <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                              <span>₹{(goal.currentAmount || 0).toLocaleString()}</span>
-                              <span>₹{goal.targetAmount.toLocaleString()}</span>
+                              <Money><span>₹{(goal.currentAmount || 0).toLocaleString()}</span></Money>
+                              <Money><span>₹{goal.targetAmount.toLocaleString()}</span></Money>
                             </div>
                             <Progress
                               value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))}
@@ -789,8 +790,8 @@ const Dashboard = () => {
                         {goal.targetAmount > 0 && (
                           <div className="mt-1.5">
                             <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                              <span>₹{(goal.currentAmount || 0).toLocaleString()}</span>
-                              <span>₹{goal.targetAmount.toLocaleString()}</span>
+                              <Money><span>₹{(goal.currentAmount || 0).toLocaleString()}</span></Money>
+                              <Money><span>₹{goal.targetAmount.toLocaleString()}</span></Money>
                             </div>
                             <Progress
                               value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))}

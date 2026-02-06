@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { Money } from '@/components/ui/money';
 
 export default function BalanceView({ balances, loading }) {
   if (loading) {
@@ -54,7 +55,7 @@ export default function BalanceView({ balances, loading }) {
             <div className="ml-4">
               <div className="text-right">
                 <div className="text-lg font-bold text-primary">
-                  ₹{settlement.amount.toLocaleString('en-IN')}
+                  <Money>₹{settlement.amount.toLocaleString('en-IN')}</Money>
                 </div>
                 <p className="text-xs text-muted-foreground">owes</p>
               </div>
