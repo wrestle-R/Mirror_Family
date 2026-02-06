@@ -16,7 +16,7 @@ import {
   Briefcase, Save, Plus, Trash2, Calendar, X, ArrowUpRight, Utensils, Car, Film,
   ShoppingBag, Lightbulb, Home, BookOpen, Hospital, ShoppingCart, Smartphone,
   Package, GraduationCap, Gift, Banknote, Laptop, ArrowLeftRight, BarChart3, Plane,
-  Dumbbell, Sparkles, Shield, Mic
+  Dumbbell, Sparkles, Shield, Mic, MessageCircle, Copy, RefreshCw, Unlink
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -115,6 +115,14 @@ const Profile = () => {
   
   // Monthly income recording state
   const [recordingIncome, setRecordingIncome] = useState(false);
+  
+  // WhatsApp integration state
+  const [whatsappStatus, setWhatsappStatus] = useState({ isLinked: false, phoneNumber: null });
+  const [whatsappCode, setWhatsappCode] = useState(null);
+  const [codeExpiresAt, setCodeExpiresAt] = useState(null);
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const [unlinkingWhatsapp, setUnlinkingWhatsapp] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   
   // Form data for profile fields
   const [formData, setFormData] = useState({
@@ -454,6 +462,96 @@ const Profile = () => {
       setRecordingIncome(false);
     }
   };
+
+  // WhatsApp integration functions
+  const fetchWhatsappStatus = async () => {
+    if (!user?.uid) return;
+    try {
+      const response = await axios.get(`${API_URL}/api/whatsapp/status/${user.uid}`);
+      if (response.data.success) {
+        setWhatsappStatus(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching WhatsApp status:", error);
+    }
+  };
+
+  const handleGenerateCode = async () => {
+    setGeneratingCode(true);
+    try {
+      const response = await axios.post(`${API_URL}/api/whatsapp/generate-code`, {
+        firebaseUid: user.uid,
+        email: user.email
+      });
+      if (response.data.success) {
+        setWhatsappCode(response.data.data.code);
+        setCodeExpiresAt(Date.now() + (response.data.data.expiresIn * 1000));
+        setCountdown(response.data.data.expiresIn);
+        toast.success("Verification code generated!");
+      }
+    } catch (error) {
+      console.error("Error generating WhatsApp code:", error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to generate code");
+      }
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const handleUnlinkWhatsapp = async () => {
+    setUnlinkingWhatsapp(true);
+    try {
+      const response = await axios.post(`${API_URL}/api/whatsapp/unlink`, {
+        firebaseUid: user.uid
+      });
+      if (response.data.success) {
+        setWhatsappStatus({ isLinked: false, phoneNumber: null });
+        toast.success("WhatsApp unlinked successfully");
+      }
+    } catch (error) {
+      console.error("Error unlinking WhatsApp:", error);
+      toast.error("Failed to unlink WhatsApp");
+    } finally {
+      setUnlinkingWhatsapp(false);
+    }
+  };
+
+  // Fetch WhatsApp status on mount
+  useEffect(() => {
+    fetchWhatsappStatus();
+  }, [user?.uid]);
+
+  // Countdown timer for code expiration
+  useEffect(() => {
+    if (countdown <= 0) {
+      setWhatsappCode(null);
+      return;
+    }
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          setWhatsappCode(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  // Poll for WhatsApp status after code generation
+  useEffect(() => {
+    if (!whatsappCode || whatsappStatus.isLinked) return;
+    
+    const pollInterval = setInterval(async () => {
+      await fetchWhatsappStatus();
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [whatsappCode, whatsappStatus.isLinked]);
 
   const GoalCard = ({ goal, type }) => {
     const progress = goal.targetAmount > 0 
@@ -858,6 +956,104 @@ const Profile = () => {
                       <option value="WhatsApp">WhatsApp</option>
                     </select>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* WhatsApp Integration Card */}
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-green-500" />
+                    WhatsApp Integration
+                  </CardTitle>
+                  <CardDescription>
+                    Link your WhatsApp to add transactions and view history via chat
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {whatsappStatus.isLinked ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-green-700 dark:text-green-400">WhatsApp Linked</p>
+                          <p className="text-sm text-green-600 dark:text-green-500">{whatsappStatus.phoneNumber}</p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p><strong>How to use:</strong></p>
+                        <p>• Add transaction: <code className="bg-muted px-1 rounded">expense, food, 500, Lunch</code></p>
+                        <p>• View history: <code className="bg-muted px-1 rounded">get transactions</code></p>
+                        <p>• Get help: <code className="bg-muted px-1 rounded">help</code></p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={handleUnlinkWhatsapp}
+                        disabled={unlinkingWhatsapp}
+                      >
+                        {unlinkingWhatsapp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Unlink className="w-4 h-4 mr-2" />}
+                        Unlink WhatsApp
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {whatsappCode && countdown > 0 ? (
+                        <div className="space-y-3">
+                          <div className="p-4 bg-primary/10 rounded-lg border">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm text-muted-foreground">Your verification code:</p>
+                                <p className="text-2xl font-mono font-bold tracking-wider">{whatsappCode}</p>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(whatsappCode);
+                                  toast.success("Code copied!");
+                                }}
+                              >
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <p className="text-sm text-amber-600 mt-2">Expires in {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</p>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-2">
+                            <p><strong>To link your WhatsApp:</strong></p>
+                            <p>1. Open WhatsApp and send a message to <strong>+1 415 523 8886</strong></p>
+                            <p>2. Send this message:</p>
+                            <code className="block bg-muted p-2 rounded text-sm">
+                              LINK {user?.email} {whatsappCode}
+                            </code>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleGenerateCode}
+                            disabled={generatingCode}
+                          >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Generate New Code
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-muted-foreground">
+                            Link your WhatsApp to add transactions and check your last 10 transactions via chat messages.
+                          </p>
+                          <Button 
+                            onClick={handleGenerateCode}
+                            disabled={generatingCode}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {generatingCode ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <MessageCircle className="w-4 h-4 mr-2" />}
+                            Generate WhatsApp Code
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

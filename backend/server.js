@@ -13,6 +13,7 @@ const stockRoutes = require('./routes/stockRoutes');
 const goalAnalysisRoutes = require('./routes/goalAnalysisRoutes');
 const timeMachineRoutes = require('./routes/future/timeMachineRoutes');
 const synthesisRoutes = require('./routes/synthesisRoutes');
+const twilioRoutes = require('./routes/twilioRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -21,6 +22,7 @@ app.use(cors({
   origin: '*'
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Required for Twilio webhook (form-urlencoded)
 
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
@@ -32,6 +34,7 @@ app.use('/api/stocks', stockRoutes);
 app.use('/api/goal-analysis', goalAnalysisRoutes);
 app.use('/api/future', timeMachineRoutes);
 app.use('/api/synthesis', synthesisRoutes);
+app.use('/api/whatsapp', twilioRoutes);
 
 
 app.use((req, res, next) => {

@@ -23,7 +23,8 @@
     "express": "^4.21.0",
     "groq-sdk": "^0.37.0",
     "mongoose": "^8.6.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "twilio": "^5.12.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

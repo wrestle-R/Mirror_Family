@@ -19,6 +19,7 @@ import GoalPlans from "@/pages/GoalPlans";
 import Groups from "@/pages/Groups";
 import GroupDetailsPage from "@/pages/GroupDetailsPage";
 import StockRecommendations from "@/pages/StockRecommendations";
+import Whatsapp from "@/pages/Whatsapp";
 import NotFound from "@/pages/NotFound";
 import FinancialCommandCenter from "@/pages/FinancialCommandCenter";
 import TimeMachine from "@/pages/TimeMachine";
@@ -61,6 +62,7 @@ function App() {
               <Route path="command-center" element={<FinancialCommandCenter />} />
               <Route path="time-machine" element={<TimeMachine />} />
               <Route path="council-synthesis" element={<CouncilSynthesis />} />
+              <Route path="whatsapp" element={<Whatsapp />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
