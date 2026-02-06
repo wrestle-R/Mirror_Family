@@ -1,13 +1,75 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
-import { Loader2, RefreshCw, PiggyBank, Target, BarChart3 } from "lucide-react";
+import { Loader2, RefreshCw, PiggyBank, Target, TrendingUp, CheckCircle2, MoreHorizontal, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine, ReferenceDot } from 'recharts';
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+// --- Mermaid Component ---
+const MermaidDiagram = ({ chart }) => {
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (!chart) return;
+
+        const loadMermaid = async () => {
+            if (!window.mermaid) {
+                const script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js";
+                script.async = true;
+                script.onload = () => initMermaid();
+                document.body.appendChild(script);
+            } else {
+                initMermaid();
+            }
+        };
+
+        const initMermaid = () => {
+            if (window.mermaid) {
+                window.mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'base',
+                    securityLevel: 'loose',
+                    flowchart: { curve: 'basis', htmlLabels: true }
+                });
+                renderDiagram();
+            }
+        };
+
+        const renderDiagram = async () => {
+            // Small delay to ensure container is ready
+            await new Promise(r => setTimeout(r, 100));
+            if (window.mermaid && containerRef.current) {
+                try {
+                    const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+                    const { svg } = await window.mermaid.render(id, chart);
+                    containerRef.current.innerHTML = svg;
+                } catch (e) {
+                    console.error("Mermaid Render Error:", e);
+                    // Fallback or retry logic could go here
+                }
+            }
+        };
+
+        loadMermaid();
+    }, [chart]);
+
+    return (
+        <div className="mermaid-container w-full overflow-x-auto flex justify-center p-8 bg-white dark:bg-muted/10 rounded-xl border border-border/50 min-h-[200px]" ref={containerRef}>
+            <div className="flex items-center gap-2 text-muted-foreground animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin" /> Rendering Strategy Flow...
+            </div>
+        </div>
+    );
+};
+
 
 const SavingsAgent = () => {
     const type = "savings";
@@ -16,12 +78,12 @@ const SavingsAgent = () => {
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
     const [profile, setProfile] = useState(null);
+    const [adjustment, setAdjustment] = useState(0);
 
     const info = {
-        title: "Savings Agent",
-        icon: PiggyBank,
-        color: "#10b981",
-        description: "Reach your financial goals faster."
+        title: "Savings Strategist",
+        description: "Advanced simulation & strategic execution planning.",
+        icon: PiggyBank
     };
 
     useEffect(() => {
@@ -47,9 +109,19 @@ const SavingsAgent = () => {
         setLoading(true);
         try {
             const res = await axios.get(`${API_URL}/api/agents/${type}/${user.uid}`);
-            if (res.data && res.data.data) setData(res.data.data);
-            else setData(null);
-        } catch (error) { console.error("Error fetching agent data", error); } finally { setLoading(false); }
+            console.log("Savings Agent Data Response:", res.data);
+            if (res.data && res.data.data) {
+                console.log("Setting data:", res.data.data);
+                setData(res.data.data);
+            } else {
+                console.log("No data in response");
+                setData(null);
+            }
+        } catch (error) {
+            console.error("Error fetching agent data", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGenerate = async () => {
@@ -57,80 +129,91 @@ const SavingsAgent = () => {
         setGenerating(true);
         try {
             const res = await axios.post(`${API_URL}/api/agents/generate`, { type, firebaseUid: user.uid });
+            console.log("Generated Savings Data:", res.data);
             setData(res.data.data);
-            toast.success("Analysis generated successfully!");
-        } catch (error) { console.error("Error generating analysis", error); toast.error("Failed to generate analysis."); } finally { setGenerating(false); }
+            setAdjustment(0);
+            toast.success("Strategy generated!");
+        } catch (error) {
+            console.error("Error generating analysis", error);
+            toast.error("Failed to generate analysis.");
+        } finally {
+            setGenerating(false);
+        }
     };
 
-    const renderChart = () => {
-        if (!data?.chartData || data.chartData.length === 0) return null;
-        const dataKeys = Object.keys(data.chartData[0]).filter(key => key !== 'name');
-        const colors = [info.color, "#f59e0b", "#3b82f6", "#ef4444", "#ec4899"];
-
-        return (
-            <div className="h-[300px] w-full mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.chartData}>
-                        <defs>
-                            {dataKeys.map((key, index) => (
-                                <linearGradient key={`grad-${key}`} id={`color-${key}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors[index % colors.length]} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={colors[index % colors.length]} stopOpacity={0} />
-                                </linearGradient>
-                            ))}
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
-                        <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }} formatter={(value) => [`₹${value.toLocaleString()}`, ""]} labelStyle={{ color: "#64748b", marginBottom: "0.25rem" }} />
-                        <Legend iconType="circle" />
-                        {dataKeys.map((key, index) => (
-                            <Area key={key} type="monotone" dataKey={key} stroke={colors[index % colors.length]} fillOpacity={1} fill={`url(#color-${key})`} strokeWidth={2} name={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()} />
-                        ))}
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
-        );
-    };
-
-    const convaiVariables = {
+    const convaiVariables = useMemo(() => ({
         user_name: user?.displayName || profile?.name || "User",
-        email: user?.email || "",
         agent_type: type,
-        monthly_income: profile?.monthlyIncome || 0,
-        monthly_budget: profile?.monthlyBudget || 0,
-        current_savings: profile?.currentSavings || 0,
-        savings_goal: profile?.savingsGoal || 0,
-        total_debt: profile?.totalDebt || 0,
-        debt_payment_monthly: profile?.debtPaymentMonthly || 0,
-        investments_amount: profile?.investmentsAmount || 0,
-        investment_type: profile?.investmentType || "none",
-        financial_literacy: profile?.financialLiteracy || "Beginner",
-        risk_tolerance: profile?.riskTolerance || "Low",
-        short_term_goals_count: profile?.shortTermGoals?.length || 0,
-        long_term_goals_count: profile?.longTermGoals?.length || 0,
+        monthly_surplus: data?.monthly_surplus || 0,
         has_analysis: data ? "yes" : "no",
+    }), [user, profile, data]);
+
+    // --- Simulation Logic ---
+    const params = data?.simulation_parameters || {
+        base_monthly_contribution: data?.monthly_surplus || 0,
+        current_total_savings: 0,
+        total_goal_target: 100000
     };
+
+    console.log("Simulation Parameters:", params, "Data:", data);
+
+    const baseContribution = params.base_monthly_contribution || 0;
+    const currentContribution = Math.max(0, baseContribution + adjustment);
+    const goalTarget = params.total_goal_target || 100000;
+    const startAmount = params.current_total_savings || 0;
+
+    // Generate Growth Curve (36 months projection)
+    const simulatedChartData = useMemo(() => {
+        const months = 36;
+        const curve = [];
+        let accumulated = startAmount;
+        let intersectionMonth = null;
+
+        for (let i = 0; i <= months; i++) {
+            const projected = accumulated + (currentContribution * i);
+
+            if (intersectionMonth === null && projected >= goalTarget) {
+                intersectionMonth = i;
+            }
+
+            curve.push({
+                month: i,
+                name: i === 0 ? 'Now' : `Month ${i}`,
+                Accumulated: projected,
+                Goal: goalTarget
+            });
+        }
+
+        console.log("Chart Generated:", { curveLength: curve.length, intersectionMonth, goalTarget, currentContribution });
+        return { curve, intersectionMonth };
+    }, [currentContribution, startAmount, goalTarget]);
+
+    const { curve, intersectionMonth } = simulatedChartData;
+    const intersectionPoint = intersectionMonth !== null ? curve[intersectionMonth] : null;
 
     if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <div className="min-h-screen w-full p-4 lg:p-8 flex flex-col gap-8 max-w-[1600px] mx-auto">
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                        <info.icon className="w-8 h-8 text-primary" style={{ color: info.color }} />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{info.title}</h1>
-                        <p className="text-muted-foreground">{info.description}</p>
-                    </div>
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <PiggyBank className="w-8 h-8 text-green-700 dark:text-green-400" />
+                        </div>
+                        {info.title}
+                    </h1>
+                    <p className="text-muted-foreground mt-1 text-base">{info.description}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {data && <div className="text-xs text-muted-foreground hidden md:block">Last updated: {new Date(data.lastUpdated).toLocaleDateString()}</div>}
-                    <Button onClick={handleGenerate} disabled={generating} size="lg" className="shadow-lg shadow-primary/20">
+                <div className="flex gap-2">
+                    <Button
+                        onClick={handleGenerate}
+                        disabled={generating}
+                        className="bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    >
                         {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                        {data ? "Regenerate Analysis" : "Generate Analysis"}
+                        {data ? "Refresh Strategy" : "Generate Strategy"}
                     </Button>
                 </div>
             </div>
@@ -139,47 +222,168 @@ const SavingsAgent = () => {
 
             {!data ? (
                 <Card className="border-dashed border-2 bg-muted/20">
-                    <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-                            <BarChart3 className="w-10 h-10 text-muted-foreground" />
+                    <CardContent className="flex flex-col items-center justify-center py-24 text-center">
+                        <div className="w-24 h-24 bg-green-50 dark:bg-green-900/10 rounded-full flex items-center justify-center mb-6">
+                            <Target className="w-12 h-12 text-green-600/50" />
                         </div>
-                        <h3 className="text-xl font-semibold mb-2">No Analysis Generated Yet</h3>
-                        <p className="text-muted-foreground mb-6 max-w-md">Get personalized AI insights for your savings specifically tailored to your financial profile.</p>
-                        <Button onClick={handleGenerate} disabled={generating}>Start AI Analysis</Button>
+                        <h3 className="text-2xl font-bold mb-2">Build Your Wealth Plan</h3>
+                        <p className="text-muted-foreground mb-8 max-w-md text-lg">
+                            Let AI analyze your finances and build a custom roadmap to reach your goals faster.
+                        </p>
+                        <Button onClick={handleGenerate} disabled={generating} size="lg" className="px-8">Start Planning</Button>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-6 md:grid-cols-12">
-                    <Card className="col-span-12 md:col-span-8 shadow-sm">
+                <>
+                    {/* TOP SECTION: Simulation & Controls */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Chart (Large) */}
+                        <div className="lg:col-span-8">
+                            <Card className="h-full border-none shadow-sm flex flex-col">
+                                <CardHeader>
+                                    <CardTitle>Wealth Trajectory</CardTitle>
+                                    <CardDescription>Projected growth vs Total Goals Target</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-1 min-h-[350px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={curve} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                            <defs>
+                                                <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                                            <XAxis dataKey="name" hide />
+                                            <YAxis orientation="left" tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} fontSize={10} axisLine={false} tickLine={false} />
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                                                formatter={(value) => [`₹${value.toLocaleString()}`, ""]}
+                                            />
+                                            <ReferenceLine y={goalTarget} label={{ position: 'insideTopRight', value: `Target: ₹${(goalTarget / 1000).toFixed(0)}k`, fill: '#ef4444', fontSize: 12, fontWeight: 'bold' }} stroke="#ef4444" strokeDasharray="3 3" />
+
+                                            {intersectionMonth !== null && (
+                                                <ReferenceLine x={`Month ${intersectionMonth}`} stroke="#10b981" strokeDasharray="3 3">
+                                                    {/* Custom Label Logic could go here, but using a ReferenceDot is often cleaner */}
+                                                </ReferenceLine>
+                                            )}
+
+                                            {intersectionPoint && (
+                                                <ReferenceDot
+                                                    x={`Month ${intersectionMonth}`}
+                                                    y={intersectionPoint.Accumulated}
+                                                    r={6}
+                                                    fill="#10b981"
+                                                    stroke="#fff"
+                                                    strokeWidth={2}
+                                                />
+                                            )}
+
+                                            <Area type="monotone" dataKey="Accumulated" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorAcc)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Controls (Sticky) */}
+                        <div className="lg:col-span-4">
+                            <Card className="sticky top-6 border-l-4 border-l-primary shadow-lg bg-linear-to-b from-card to-muted/20">
+                                <CardHeader className="pb-4">
+                                    <CardTitle className="text-sm uppercase tracking-wide text-muted-foreground font-bold flex items-center gap-2">
+                                        <TrendingUp className="w-4 h-4" /> Power Simulator
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-8">
+                                    <div>
+                                        <div className="flex justify-between items-end mb-4">
+                                            <div>
+                                                <p className="text-sm font-medium text-muted-foreground">Monthly Input</p>
+                                                <p className="text-3xl font-black text-primary mt-1">₹{currentContribution.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+
+                                        <Slider
+                                            value={[adjustment]}
+                                            onValueChange={(v) => setAdjustment(v[0])}
+                                            max={50000}
+                                            min={-Math.min(baseContribution, 20000)}
+                                            step={1000}
+                                            className="py-2"
+                                        />
+                                        <div className="flex justify-between text-[10px] text-muted-foreground mt-3 font-mono">
+                                            <span>Base: ₹{baseContribution.toLocaleString()}</span>
+                                            <span>Max Boost</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/50 dark:bg-black/20 rounded-xl p-4 border border-border/50 text-center space-y-1">
+                                        {intersectionMonth !== null ? (
+                                            <>
+                                                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Goal Achievement</p>
+                                                <div className="text-2xl font-black text-green-600 flex items-center justify-center gap-2">
+                                                    <Flag className="w-5 h-5 fill-green-600 text-green-600" />
+                                                    {intersectionMonth} Months
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {(intersectionMonth / 12).toFixed(1)} Years from now
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="text-sm text-orange-500 font-bold flex items-center justify-center gap-2">
+                                                <TrendingUp className="w-4 h-4" /> Goals beyond 3-year horizon
+                                            </p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* MIDDLE SECTION: Execution Plan */}
+                    <Card className="border-none shadow-sm">
                         <CardHeader>
-                            <CardTitle>Savings Projection</CardTitle>
-                            <CardDescription>Visual analysis of your current trajectory vs potential growth</CardDescription>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                    <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg">Execution Plan</CardTitle>
+                                    <CardDescription>Strategic steps recommended by AI</CardDescription>
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent>{renderChart()}</CardContent>
-                    </Card>
-                    <Card className="col-span-12 md:col-span-4 shadow-sm h-full">
-                        <CardHeader className="bg-primary/5 border-b">
-                            <CardTitle className="flex items-center gap-2"><Target className="w-5 h-5 text-primary" />Action Plan</CardTitle>
-                            <CardDescription>Top strategic recommendations</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <ul className="space-y-4">
-                                {data.tips?.map((tip, i) => (
-                                    <li key={i} className="flex gap-3 items-start">
-                                        <div className="mt-0.5 min-w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">{i + 1}</div>
-                                        <span className="text-sm font-medium leading-relaxed">{tip}</span>
-                                    </li>
+                        <CardContent>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {data.comprehensive_plan?.map((step, i) => (
+                                    <div key={i} className="flex gap-4 p-4 rounded-xl border bg-card hover:bg-muted/30 transition-colors">
+                                        <div className="text-4xl font-black text-muted-foreground/20">{step.step}</div>
+                                        <div className="space-y-1 pt-1">
+                                            <h4 className="font-bold text-sm text-foreground">{step.title}</h4>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                                        </div>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </CardContent>
                     </Card>
-                    {data.details && (
-                        <Card className="col-span-12 shadow-sm border-primary/20 bg-linear-to-b from-primary/5 to-transparent">
-                            <CardHeader><CardTitle>Deep Dive Analysis</CardTitle><CardDescription>Comprehensive report generated by our AI financial models</CardDescription></CardHeader>
-                            <CardContent><div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap leading-7">{data.summary && <p className="font-semibold text-foreground mb-4 text-lg">{data.summary}</p>}{data.details}</div></CardContent>
+
+
+                    {/* BOTTOM SECTION: Detailed Flowchart */}
+                    {data.mermaid_diagram && (
+                        <Card className="overflow-hidden border-none shadow-sm">
+                            <CardHeader className="bg-muted/10 pb-4 border-b">
+                                <div className="flex items-center gap-2">
+                                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Visual Strategy Map</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <div className="p-0 bg-white dark:bg-black/20">
+                                <MermaidDiagram chart={data.mermaid_diagram} />
+                            </div>
                         </Card>
                     )}
-                </div>
+                </>
             )}
         </div>
     );

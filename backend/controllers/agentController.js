@@ -4,7 +4,7 @@ const StudentProfile = require('../models/StudentProfile');
 const Transaction = require('../models/Transaction');
 const Student = require('../models/Student');
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY }); 
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const getSystemPrompt = (type) => {
   const basePrompt = `You are an expert financial advisor for students. You are the '${type}' agent.
@@ -24,9 +24,25 @@ const getSystemPrompt = (type) => {
   if (type === 'budget') {
     return basePrompt + `
     Focus on spending reduction and optimization.
-    Identify top 2-3 categories where spending is highest.
-    Estimate realistic monthly savings potential in INR.
-    Provide actionable, specific cutback strategies (e.g., "Reduce dining out from ₹5000 to ₹3000 by cooking 3 more meals at home").
+    Compare user spending to soft benchmarks (e.g., 50/30/20 rule, city-aware if data implies), but remain flexible.
+    Identify ONLY the top 2-3 high-impact categories to optimize.
+    Estimate realistic monthly savings unlocked per category.
+    Explain recommendations in terms of OPPORTUNITY COST (e.g., "Saving this amount could fast-track your emergency fund by 2 months").
+    Keep tone neutral, non-judgmental, and objective.
+
+    ADDITIONAL JSON FIELDS REQUIRED:
+    "recommendations": [
+      {
+        "category": "Category Name",
+        "currentSpending": 5000,
+        "suggestedSpending": 3000,
+        "potentialSavings": 2000,
+        "benchmark": "Currently 15% of income (Target: 10%)",
+        "opportunityCost": "This ₹2,000 could pay for your monthly utilities.",
+        "action": "Limit dining out to weekends only."
+      }
+    ]
+
     chartData should be expense breakdown by category with values in INR.
     
     CHARTDATA EXAMPLE:
@@ -37,16 +53,46 @@ const getSystemPrompt = (type) => {
   }
   if (type === 'savings') {
     return basePrompt + `
-    Recommend 3-4 specific goal-based savings plans (Emergency Fund - 6 months expenses, Travel, Gadgets, Future Education).
-    Calculate exact monthly saving requirements in INR to reach each goal by deadline.
-    Suggest automated savings rules (e.g., "Save 20% of income automatically on 1st of month").
-    chartData should show projected savings growth month-by-month for next 6 months, comparing current trajectory vs goals.
-    Include realistic emergency fund targets (3-6 months of expenses).
+    Act as a "Strategic Wealth Architect".
     
-    CHARTDATA EXAMPLE:
-    [{"name": "Month 1", "savings": 15200, "goal": 20000}, {"name": "Month 2", "savings": 16500, "goal": 20000}, {"name": "Month 3", "savings": 17800, "goal": 20000}, {"name": "Month 4", "savings": 19100, "goal": 20000}, {"name": "Month 5", "savings": 20400, "goal": 20000}, {"name": "Month 6", "savings": 21700, "goal": 20000}]
+    CONTEXT: You will receive 'shortTermGoals' and 'longTermGoals' arrays from user data.
     
-    All amounts in INR (Indian Rupees), no dollar signs.
+    TASKS:
+    1. Calculate Monthly Surplus = Income - (Total Expenses).
+    2. Aggregate ALL goal targets:
+       - Sum up targetAmount from ALL shortTermGoals (filter out completed ones)
+       - Sum up targetAmount from ALL longTermGoals (filter out completed ones)
+       - Add Emergency Fund target (6 months of expenses if freelancer detected, else 3 months)
+       - Total = Emergency + Short Term Sum + Long Term Sum
+    3. Calculate current total savings across all goals (sum of currentAmount fields).
+    4. Create a step-by-step execution plan (comprehensive_plan) with 3-5 strategic steps.
+    5. Generate a DETAILED Mermaid flowchart (mermaid_diagram):
+       - STRICT SYNTAX: Use "graph TD"
+       - IDs must be alphanumeric only (A, B, C, D1, D2, etc.)
+       - ALL labels must be in quotes
+       - NO special characters like ₹ in labels
+       - Show: Income -> Expenses -> Surplus -> [Emergency, ShortGoal1, ShortGoal2, LongGoal1, etc.]
+       - Use decision nodes for allocation logic
+    
+    REQUIRED JSON STRUCTURE:
+    {
+      "summary": "High-level strategy summary in 1-2 sentences.",
+      "monthly_surplus": 5000,
+      "simulation_parameters": {
+        "current_total_savings": 50000,
+        "total_goal_target": 500000,
+        "base_monthly_contribution": 5000
+      },
+      "comprehensive_plan": [
+        { "step": "1", "title": "Emergency Shield", "description": "Build 6-month safety net in liquid funds first." },
+        { "step": "2", "title": "Short-Term Wins", "description": "Allocate 40% of surplus to short-term goals." },
+        { "step": "3", "title": "Long-Term Wealth", "description": "Invest remaining 30% in equity/debt mix for long-term." }
+      ],
+      "mermaid_diagram": "graph TD\\n  A[\\\"Monthly Income\\\"] --> B[\\\"Fixed Expenses\\\"]\\n  A --> C[\\\"Surplus\\\"]\\n  C --> D{\\\"Allocation\\\"}\\n  D --> E[\\\"Emergency Fund\\\"]\\n  D --> F[\\\"Short Term Goals\\\"]\\n  D --> G[\\\"Long Term Wealth\\\"]",
+      "tips": ["Automate savings on payday", "Review goals quarterly", "Increase contributions with raises"]
+    }
+
+    All amounts in INR.
     `;
   }
   if (type === 'debt') {
@@ -126,7 +172,7 @@ exports.getAgentData = async (req, res) => {
 exports.generateAgentData = async (req, res) => {
   try {
     const { type, firebaseUid } = req.body;
-    
+
     if (!['budget', 'savings', 'debt', 'investment'].includes(type)) {
       return res.status(400).json({ message: 'Invalid agent type' });
     }
@@ -140,7 +186,7 @@ exports.generateAgentData = async (req, res) => {
     // 1. Gather Context
     const profile = await StudentProfile.findOne({ student: studentId });
     const transactions = await Transaction.find({ student: studentId }).sort({ date: -1 }).limit(50);
-    
+
     if (!profile) {
       return res.status(404).json({ message: 'Student profile not found. Please complete profile first.' });
     }
@@ -157,7 +203,8 @@ exports.generateAgentData = async (req, res) => {
         other: profile.otherExpenses
       },
       savings: profile.currentSavings,
-      goals: profile.shortTermGoals,
+      shortTermGoals: profile.shortTermGoals || [],
+      longTermGoals: profile.longTermGoals || [],
       debts: profile.totalDebt,
       transactions: transactions.map(t => ({
         date: t.date,
@@ -175,12 +222,12 @@ exports.generateAgentData = async (req, res) => {
       ],
       model: "llama-3.1-8b-instant",
       temperature: 0.5,
-      response_format: { type: "json_object" } 
+      response_format: { type: "json_object" }
     });
 
     const content = completion.choices[0]?.message?.content;
     let parsedData;
-    
+
     try {
       parsedData = JSON.parse(content);
     } catch (e) {
@@ -191,7 +238,7 @@ exports.generateAgentData = async (req, res) => {
     // 3. Save to DB
     const agentData = await AgentData.findOneAndUpdate(
       { student: studentId, type },
-      { 
+      {
         data: parsedData,
         lastUpdated: Date.now()
       },
