@@ -19,6 +19,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import FinancialHealthScoreCard from "@/components/Dashboard/FinancialHealthScoreCard";
+import GoalProgressTimeline from "@/components/Dashboard/GoalProgressTimeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -397,6 +398,21 @@ const Dashboard = () => {
                 shortTermGoals: shortTermGoals || [],
                 longTermGoals: longTermGoals || []
               }}
+            />
+          </motion.div>
+        )}
+
+        {/* Goal Progress Timeline */}
+        {profileData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <GoalProgressTimeline
+              currentSavings={profileData.currentSavings || 0}
+              shortTermGoals={shortTermGoals || []}
+              longTermGoals={longTermGoals || []}
             />
           </motion.div>
         )}
