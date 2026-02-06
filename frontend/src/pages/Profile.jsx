@@ -190,7 +190,11 @@ const Profile = () => {
             });
             setShortTermGoals(profile.shortTermGoals || []);
             setLongTermGoals(profile.longTermGoals || []);
-            calculateCompletion(profile);
+            calculateCompletion({ 
+              ...profile, 
+              name: studentData.name, 
+              contactNumber: studentData.contactNumber 
+            });
           }
         } catch (error) {
           console.error("Error fetching profile:", error);
