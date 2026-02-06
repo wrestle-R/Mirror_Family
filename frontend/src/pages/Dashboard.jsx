@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { useUser } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -7,7 +8,7 @@ import { format } from "date-fns";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { 
+import {
   Wallet, PiggyBank, TrendingUp, TrendingDown, Plus, ArrowUpRight, ArrowDownRight,
   Target, CheckCircle2, DollarSign, CreditCard, Calendar, ChevronRight,
   Loader2, Receipt, Sparkles, AlertCircle, Clock, Utensils, Car, Film,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import FinancialHealthScoreCard from "@/components/Dashboard/FinancialHealthScoreCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,14 +76,14 @@ const Dashboard = () => {
   const { user, student } = useUser();
   const navigate = useNavigate();
   const incomeRecordedRef = useRef(false);
-  
+
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
   const [transactionStats, setTransactionStats] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [shortTermGoals, setShortTermGoals] = useState([]);
   const [longTermGoals, setLongTermGoals] = useState([]);
-  
+
   // Add transaction form
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [transactionType, setTransactionType] = useState('expense');
@@ -146,7 +148,7 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     if (!user?.uid) return;
-    
+
     setLoading(true);
     try {
       const [profileRes, statsRes, goalsRes] = await Promise.all([
@@ -232,26 +234,26 @@ const Dashboard = () => {
         const { profile } = response.data.data;
         setShortTermGoals(profile.shortTermGoals || []);
         setLongTermGoals(profile.longTermGoals || []);
-        
+
         // If goal was just completed (not uncompleted), show transaction modal
         if (!wasCompleted) {
           const updatedGoals = [...(profile.shortTermGoals || []), ...(profile.longTermGoals || [])];
           const completedGoalData = updatedGoals.find(g => g.id === goalId);
-          
+
           if (completedGoalData && completedGoalData.isCompleted) {
             setCompletedGoal(completedGoalData);
-            
+
             // Pre-fill transaction form based on goal
             const suggestedCategory = completedGoalData.category === 'purchase' ? 'shopping' :
-                                       completedGoalData.category === 'education' ? 'education' :
-                                       completedGoalData.category === 'travel' ? 'travel' :
-                                       completedGoalData.category === 'investment' ? 'investment_return' :
-                                       completedGoalData.category === 'debt_repayment' ? 'other_expense' :
-                                       'other_expense';
-            
-            const isIncome = completedGoalData.category === 'investment' || 
-                            completedGoalData.category === 'savings';
-            
+              completedGoalData.category === 'education' ? 'education' :
+                completedGoalData.category === 'travel' ? 'travel' :
+                  completedGoalData.category === 'investment' ? 'investment_return' :
+                    completedGoalData.category === 'debt_repayment' ? 'other_expense' :
+                      'other_expense';
+
+            const isIncome = completedGoalData.category === 'investment' ||
+              completedGoalData.category === 'savings';
+
             setGoalTransactionForm({
               type: isIncome ? 'income' : 'expense',
               amount: completedGoalData.targetAmount || completedGoalData.currentAmount || '',
@@ -263,7 +265,7 @@ const Dashboard = () => {
             setShowGoalModal(true);
           }
         }
-        
+
         toast.success(response.data.message);
       }
     } catch (error) {
@@ -315,16 +317,16 @@ const Dashboard = () => {
   };
 
   // Calculate stats
-  const totalExpenses = profileData ? 
-    (profileData.rentExpense || 0) + (profileData.foodExpense || 0) + 
-    (profileData.transportationExpense || 0) + (profileData.utilitiesExpense || 0) + 
+  const totalExpenses = profileData ?
+    (profileData.rentExpense || 0) + (profileData.foodExpense || 0) +
+    (profileData.transportationExpense || 0) + (profileData.utilitiesExpense || 0) +
     (profileData.otherExpenses || 0) : 0;
 
-  const budgetUsed = profileData?.monthlyBudget > 0 
+  const budgetUsed = profileData?.monthlyBudget > 0
     ? Math.min(100, Math.round((totalExpenses / profileData.monthlyBudget) * 100))
     : 0;
 
-  const savingsProgress = profileData?.savingsGoal > 0 
+  const savingsProgress = profileData?.savingsGoal > 0
     ? Math.min(100, Math.round((profileData.currentSavings / profileData.savingsGoal) * 100))
     : 0;
 
@@ -381,6 +383,23 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* Financial Health Score - Flagship Feature */}
+        {profileData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <FinancialHealthScoreCard
+              profileData={{
+                ...profileData,
+                shortTermGoals: shortTermGoals || [],
+                longTermGoals: longTermGoals || []
+              }}
+            />
+          </motion.div>
+        )}
 
         {/* Quick Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -477,11 +496,10 @@ const Dashboard = () => {
                         setTransactionType('expense');
                         setTransactionForm(prev => ({ ...prev, category: 'food' }));
                       }}
-                      className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                        transactionType === 'expense' 
-                          ? 'bg-red-500 text-white' 
-                          : 'bg-muted hover:bg-muted/80'
-                      }`}
+                      className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${transactionType === 'expense'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-muted hover:bg-muted/80'
+                        }`}
                     >
                       <ArrowDownRight className="w-4 h-4" />
                       Expense
@@ -491,11 +509,10 @@ const Dashboard = () => {
                         setTransactionType('income');
                         setTransactionForm(prev => ({ ...prev, category: 'allowance' }));
                       }}
-                      className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                        transactionType === 'income' 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-muted hover:bg-muted/80'
-                      }`}
+                      className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${transactionType === 'income'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-muted hover:bg-muted/80'
+                        }`}
                     >
                       <ArrowUpRight className="w-4 h-4" />
                       Income
@@ -592,8 +609,8 @@ const Dashboard = () => {
                           {budgetUsed}%
                         </span>
                       </div>
-                      <Progress 
-                        value={budgetUsed} 
+                      <Progress
+                        value={budgetUsed}
                         className={`h-3 ${budgetUsed > 80 ? '[&>div]:bg-red-500' : budgetUsed > 50 ? '[&>div]:bg-yellow-500' : ''}`}
                       />
                       <div className="flex justify-between mt-2 text-xs text-muted-foreground">
@@ -601,7 +618,7 @@ const Dashboard = () => {
                         <span>₹{profileData.monthlyBudget.toLocaleString()} budget</span>
                       </div>
                     </div>
-                    
+
                     <Separator />
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -669,9 +686,8 @@ const Dashboard = () => {
                     {recentTransactions.map((tx) => (
                       <div key={tx._id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            tx.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
-                          }`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                            }`}>
                             {tx.type === 'income' ? (
                               <ArrowUpRight className="w-5 h-5 text-green-600" />
                             ) : (
@@ -738,8 +754,8 @@ const Dashboard = () => {
                               <span>₹{(goal.currentAmount || 0).toLocaleString()}</span>
                               <span>₹{goal.targetAmount.toLocaleString()}</span>
                             </div>
-                            <Progress 
-                              value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))} 
+                            <Progress
+                              value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))}
                               className="h-1.5"
                             />
                           </div>
@@ -792,8 +808,8 @@ const Dashboard = () => {
                               <span>₹{(goal.currentAmount || 0).toLocaleString()}</span>
                               <span>₹{goal.targetAmount.toLocaleString()}</span>
                             </div>
-                            <Progress 
-                              value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))} 
+                            <Progress
+                              value={Math.min(100, Math.round(((goal.currentAmount || 0) / goal.targetAmount) * 100))}
                               className="h-1.5"
                             />
                           </div>
@@ -832,13 +848,13 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                {budgetUsed > 80 
+                {budgetUsed > 80
                   ? <><AlertCircle className="w-4 h-4 text-orange-500 shrink-0" /> You've used most of your budget. Consider reviewing your spending categories.</>
                   : savingsProgress < 30
-                  ? <><Lightbulb className="w-4 h-4 text-yellow-500 shrink-0" /> Try to save at least 20% of your income. Small amounts add up!</>
-                  : netBalance < 0
-                  ? <><TrendingDown className="w-4 h-4 text-red-500 shrink-0" /> You're spending more than you earn. Review your expenses.</>
-                  : <><Sparkles className="w-4 h-4 text-cyan-500 shrink-0" /> Great job! Keep tracking your expenses to maintain financial health.</>
+                    ? <><Lightbulb className="w-4 h-4 text-yellow-500 shrink-0" /> Try to save at least 20% of your income. Small amounts add up!</>
+                    : netBalance < 0
+                      ? <><TrendingDown className="w-4 h-4 text-red-500 shrink-0" /> You're spending more than you earn. Review your expenses.</>
+                      : <><Sparkles className="w-4 h-4 text-cyan-500 shrink-0" /> Great job! Keep tracking your expenses to maintain financial health.</>
                 }
               </p>
             </CardContent>
@@ -898,22 +914,20 @@ const Dashboard = () => {
               <div className="flex rounded-lg overflow-hidden border">
                 <button
                   onClick={() => setGoalTransactionForm(prev => ({ ...prev, type: 'expense', category: 'other_expense' }))}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                    goalTransactionForm.type === 'expense' 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
+                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${goalTransactionForm.type === 'expense'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-muted hover:bg-muted/80'
+                    }`}
                 >
                   <ArrowDownRight className="w-4 h-4" />
                   Expense
                 </button>
                 <button
                   onClick={() => setGoalTransactionForm(prev => ({ ...prev, type: 'income', category: 'other_income' }))}
-                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
-                    goalTransactionForm.type === 'income' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
+                  className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${goalTransactionForm.type === 'income'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-muted hover:bg-muted/80'
+                    }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
                   Income
@@ -977,8 +991,8 @@ const Dashboard = () => {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowGoalModal(false);
                     setCompletedGoal(null);
