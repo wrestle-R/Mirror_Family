@@ -1,6 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const groupController = require('../controllers/groupController');
+const multer = require('multer');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 8 * 1024 * 1024,
+    files: 8
+  }
+});
 
 // Group management routes
 router.post('/', groupController.createGroup);
@@ -32,6 +41,11 @@ router.get('/:groupId/transactions', groupController.getGroupTransactions);
 
 // Analytics
 router.get('/:groupId/analytics', groupController.getGroupAnalytics);
+
+// Parse Bill
+router.post('/parse-bill', upload.array('images', 8), groupController.parseGroupBill);
+
+// Settle expense (legacy - keeping for backward compatibility)
 
 // Settle expense (legacy - keeping for backward compatibility)
 router.post('/:groupId/expenses/:expenseId/settle', groupController.settleExpense);

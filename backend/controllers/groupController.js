@@ -3,6 +3,97 @@ const GroupExpense = require('../models/GroupExpense');
 const Student = require('../models/Student');
 const Transaction = require('../models/Transaction');
 
+const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+const ALLOWED_CATEGORIES = [
+  'food', 'transportation', 'entertainment', 'shopping', 'utilities', 'rent',
+  'groceries', 'dining_out', 'travel', 'other'
+];
+
+function stripJsonFences(text) {
+  if (!text || typeof text !== 'string') return '';
+  const trimmed = text.trim();
+  if (trimmed.startsWith('```')) {
+    return trimmed.replace(/^```[a-zA-Z]*\n?/, '').replace(/```\s*$/, '').trim();
+  }
+  return trimmed;
+}
+
+function safeJsonParse(text) {
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+async function callGeminiReceiptExtractor({ apiKey, images }) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+  const prompt = [
+    'You are an expert receipt and invoice parser.',
+    'Extract the total expense details from the provided receipt images.',
+    '',
+    'Return ONLY valid JSON (no markdown). Schema:',
+    '{',
+    '  "amount": number,',
+    '  "category": string (must be one of allowed categories),',
+    '  "description": string (elaborate description including merchant and key items),',
+    '  "date": string (ISO 8601 date),',
+    '  "notes": string (optional details)',
+    '}',
+    '',
+    `Allowed categories: ${ALLOWED_CATEGORIES.join(', ')}`,
+    '',
+    'Rules:',
+    '- Amount must be positive.',
+    '- If missing, infer category from merchant/items.',
+    '- Description should be elaborate, e.g., "Dinner at [Merchant] including pizza, drinks, and dessert" or "Groceries from [Store] - fruits, cleaner, milk".'
+  ].join('\n');
+
+  const parts = [{ text: prompt }];
+  for (const img of images) {
+    parts.push({
+      inline_data: {
+        mime_type: img.mimeType,
+        data: img.base64
+      }
+    });
+  }
+
+  const body = {
+    contents: [{ role: 'user', parts }],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: 'application/json'
+    }
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    throw new Error('Gemini returned no text content');
+  }
+
+  const cleaned = stripJsonFences(text);
+  const parsed = safeJsonParse(cleaned);
+  if (!parsed.ok) {
+    throw new Error('Failed to parse Gemini JSON response');
+  }
+
+  return parsed.value;
+}
+
 // Create a new group
 exports.createGroup = async (req, res) => {
   try {
@@ -835,6 +926,71 @@ exports.settleBalance = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to settle balance',
+      error: error.message
+    });
+  }
+};
+
+// Parse receipt for group expense
+exports.parseGroupBill = async (req, res) => {
+  try {
+    const { firebaseUid } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ success: false, message: 'Firebase UID is required' });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ success: false, message: 'GEMINI_API_KEY is not configured' });
+    }
+
+    const files = req.files || [];
+    if (!Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one image is required' });
+    }
+
+    const images = files.map((f) => ({
+      mimeType: f.mimetype || 'image/jpeg',
+      base64: f.buffer.toString('base64')
+    }));
+
+    const extracted = await callGeminiReceiptExtractor({
+      apiKey: process.env.GEMINI_API_KEY,
+      images
+    });
+
+    // Handle array response (if model returns array) or single object
+    const data = Array.isArray(extracted?.transactions) ? extracted.transactions[0] : extracted;
+    
+    if (!data) {
+       return res.status(200).json({
+        success: false,
+        message: 'Could not extract valid data'
+      });
+    }
+
+    // specific category validation
+    let category = data.category;
+    if (!ALLOWED_CATEGORIES.includes(category)) {
+        category = 'other';
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        amount: data.amount,
+        category: category,
+        description: data.description || data.merchant,
+        notes: data.notes,
+        date: data.date
+      }
+    });
+
+  } catch (error) {
+    console.error('Error parsing bill:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error parsing bill',
       error: error.message
     });
   }

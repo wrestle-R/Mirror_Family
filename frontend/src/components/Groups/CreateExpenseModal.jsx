@@ -22,6 +22,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
+import { Loader2, X, UploadCloud, ScanLine, Sparkles, FileText } from 'lucide-react';
 
 const CATEGORIES = [
   'food',
@@ -49,6 +50,43 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
   const [selectedMembers, setSelectedMembers] = useState(
     members.map((m) => m._id)
   );
+  
+  const [receiptImages, setReceiptImages] = useState([]);
+  const [importingBills, setImportingBills] = useState(false);
+
+  const handleImportBills = async () => {
+    if (!receiptImages.length) {
+      toast.error('Please add at least one bill photo');
+      return;
+    }
+
+    setImportingBills(true);
+    try {
+      const formData = new FormData();
+      formData.append('firebaseUid', user.uid);
+      receiptImages.forEach((file) => formData.append('images', file));
+
+      const response = await groupsApi.parseBill(formData);
+      if (response.success && response.data) {
+        setFormData(prev => ({
+            ...prev,
+            amount: response.data.amount || prev.amount,
+            category: response.data.category || prev.category,
+            description: response.data.description || prev.description,
+            notes: response.data.notes || prev.notes,
+        }));
+        toast.success('Bill parsed successfully!');
+        setReceiptImages([]);
+      } else {
+        toast.error(response.message || 'Failed to parse bill');
+      }
+    } catch (error) {
+      console.error('Error importing bills:', error);
+      toast.error('Failed to import bills');
+    } finally {
+      setImportingBills(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,7 +181,95 @@ export default function CreateExpenseModal({ open, onOpenChange, group, members,
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Import Bills Section - Enhanced UI */}
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+            <div className="p-4 bg-muted/30 border-b flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+                   <Sparkles className="w-4 h-4 text-primary" />
+                   AI Receipt Scanner
+                </div>
+                {receiptImages.length > 0 && (
+                     <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleImportBills}
+                        disabled={importingBills}
+                        className="h-8 shadow-md transition-all"
+                      >
+                        {importingBills ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <ScanLine className="w-3 h-3 mr-2" />}
+                        {importingBills ? 'Extracting...' : 'Auto-fill Details'}
+                      </Button>
+                )}
+            </div>
+            
+            <div className="p-4 space-y-4">
+                {/* Upload Area */}
+                {receiptImages.length === 0 ? (
+                    <div className="relative group cursor-pointer">
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            onChange={(e) => setReceiptImages(Array.from(e.target.files || []))}
+                        />
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 transition-all group-hover:border-primary/50 group-hover:bg-primary/5 flex flex-col items-center justify-center text-center gap-2">
+                             <div className="p-3 rounded-full bg-muted/50 group-hover:bg-primary/10 transition-colors">
+                                <UploadCloud className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
+                             </div>
+                             <div>
+                                 <p className="text-sm font-medium text-foreground">Click to upload receipt</p>
+                                 <p className="text-xs text-muted-foreground mt-1">Supports JPG, PNG (Max 5MB)</p>
+                             </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {receiptImages.map((file, idx) => (
+                                <div
+                                key={`${file.name}-${idx}`}
+                                className="relative flex items-center gap-3 p-3 rounded-lg border bg-background/50 hover:bg-background transition-colors group"
+                                >
+                                    <div className="shrink-0 w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                        <FileText className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">{file.name}</p>
+                                        <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => setReceiptImages((prev) => prev.filter((_, i) => i !== idx))}
+                                    >
+                                        <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                                    </Button>
+                                </div>
+                            ))}
+                         </div>
+                         <div className="flex justify-center pt-2">
+                            <div className="relative cursor-pointer">
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    onChange={(e) => setReceiptImages(prev => [...prev, ...Array.from(e.target.files || [])])}
+                                />
+                                <span className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                                    <UploadCloud className="w-3 h-3" />
+                                    Add another page
+                                </span>
+                            </div>
+                         </div>
+                    </div>
+                )}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount (₹) *</Label>
