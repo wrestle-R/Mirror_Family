@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Money } from "@/components/ui/money";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -309,7 +310,7 @@ const SavingsAgent = () => {
                                         <div className="flex justify-between items-end mb-4">
                                             <div>
                                                 <p className="text-sm font-medium text-muted-foreground">Monthly Input</p>
-                                                <p className="text-3xl font-black text-primary mt-1">₹{currentContribution.toLocaleString()}</p>
+                                                <p className="text-3xl font-black text-primary mt-1"><Money>₹{currentContribution.toLocaleString()}</Money></p>
                                             </div>
                                         </div>
 
@@ -322,7 +323,7 @@ const SavingsAgent = () => {
                                             className="py-2"
                                         />
                                         <div className="flex justify-between text-[10px] text-muted-foreground mt-3 font-mono">
-                                            <span>Base: ₹{baseContribution.toLocaleString()}</span>
+                                            <span>Base: <Money>₹{baseContribution.toLocaleString()}</Money></span>
                                             <span>Max Boost</span>
                                         </div>
                                     </div>

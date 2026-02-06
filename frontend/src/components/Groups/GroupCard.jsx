@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Crown, TrendingUp, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Money } from '@/components/ui/money';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,7 +95,7 @@ export default function GroupCard({ group, onClick, currentUserId, onEdit, onDel
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Total Spent</span>
             <span className="text-lg font-semibold">
-              ₹{totalExpenses.toLocaleString('en-IN')}
+              <Money>₹{totalExpenses.toLocaleString('en-IN')}</Money>
             </span>
           </div>
         </div>

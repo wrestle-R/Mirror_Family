@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/context/UserContext";
+import { Money } from "@/components/ui/money";
 import { calculateFinancialHealth } from "@/utils/healthScoreUtils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -220,7 +221,7 @@ const FinancialSummaryGrid = ({ profile }) => {
                         </div>
                         <div className="min-w-0">
                             <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider font-medium truncate">{item.label}</p>
-                            <p className="text-base md:text-lg font-bold truncate">₹{item.value.toLocaleString()}</p>
+                            <p className="text-base md:text-lg font-bold truncate"><Money>₹{item.value.toLocaleString()}</Money></p>
                         </div>
                     </CardContent>
                 </Card>

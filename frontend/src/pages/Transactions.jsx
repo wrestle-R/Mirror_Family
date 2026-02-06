@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Money } from "@/components/ui/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -366,7 +367,7 @@ const Transactions = () => {
             <div>
               <p className="text-sm text-muted-foreground">Total Income</p>
               <p className="text-2xl font-bold text-green-600">
-                +₹{(stats.totalIncome || 0).toLocaleString()}
+                <Money>+₹{(stats.totalIncome || 0).toLocaleString()}</Money>
               </p>
             </div>
             <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -380,10 +381,10 @@ const Transactions = () => {
             <div>
                       <p className="text-sm text-muted-foreground">Total Expenses</p>
                     <p className="text-2xl font-bold text-red-600">
-                      {(() => {
+                      <Money>{(() => {
                         const fromStats = stats?.totalExpense;
                         return `₹${(fromStats).toLocaleString()}`;
-                      })()}
+                      })()}</Money>
                     </p>
             </div>
             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -397,7 +398,7 @@ const Transactions = () => {
             <div>
               <p className="text-sm text-muted-foreground">Net Balance</p>
               <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString()}
+                <Money>{netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString()}</Money>
               </p>
             </div>
             <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -598,7 +599,7 @@ const Transactions = () => {
                         const d = getDisplayAmount(tx);
                         return (
                           <p className={`text-lg font-bold ${d.className}`}>
-                            {d.sign}₹{d.value.toLocaleString()}
+                            <Money>{d.sign}₹{d.value.toLocaleString()}</Money>
                           </p>
                         );
                       })()}

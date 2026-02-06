@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { format } from "date-fns";
 import { Flag, CheckCircle2, Circle, Trophy, Navigation, Calendar, Clock } from "lucide-react";
 import { calculateGoalTimeline } from "@/utils/goalTimelineUtils";
+import { Money } from "@/components/ui/money";
 
 export default function GoalProgressTimeline({
     currentSavings = 0,
@@ -35,7 +36,7 @@ export default function GoalProgressTimeline({
                             Goal Journey
                         </CardTitle>
                         <CardDescription>
-                            You've saved <strong>₹{currentSavings.toLocaleString()}</strong> of <strong>₹{totalTarget.toLocaleString()}</strong> total target
+                            You've saved <strong><Money>₹{currentSavings.toLocaleString()}</Money></strong> of <strong><Money>₹{totalTarget.toLocaleString()}</Money></strong> total target
                         </CardDescription>
                     </div>
                     <div className="text-right hidden sm:block">
@@ -111,7 +112,7 @@ export default function GoalProgressTimeline({
                                 <div className="flex items-center gap-2 mb-1 justify-center">
                                     <span className="font-semibold text-primary">{hoveredMilestone.title}</span>
                                     <span className="text-muted-foreground mx-1">•</span>
-                                    <span>Target: ₹{hoveredMilestone.targetAmount.toLocaleString()}</span>
+                                    <span>Target: <Money>₹{hoveredMilestone.targetAmount.toLocaleString()}</Money></span>
                                     {hoveredMilestone.isReached && (
                                         <span className="ml-2 inline-flex items-center text-green-600 text-xs font-bold uppercase tracking-wider">
                                             <CheckCircle2 className="w-3 h-3 mr-1" /> Achieved

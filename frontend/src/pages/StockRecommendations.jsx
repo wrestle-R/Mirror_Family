@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { useUser } from "@/context/UserContext";
 import axios from "axios";
 import { toast } from "sonner";
+import { Money } from "@/components/ui/money";
 import {
   LineChart,
   Line,
@@ -437,7 +438,7 @@ export default function StockRecommendations() {
                         <div className="flex justify-between items-center">
                           <Label className="text-base font-semibold">How much do you want to invest?</Label>
                           <Badge variant="secondary" className="text-lg font-semibold">
-                            ₹{preferences.investmentAmount.toLocaleString()}
+                            <Money>₹{preferences.investmentAmount.toLocaleString()}</Money>
                           </Badge>
                         </div>
                         <Slider
@@ -674,7 +675,7 @@ export default function StockRecommendations() {
                        </div>
                      </div>
                      <div className="text-right">
-                        <div className="text-2xl font-bold">₹{searchResult.marketData.price.toLocaleString()}</div>
+                        <div className="text-2xl font-bold"><Money>₹{searchResult.marketData.price.toLocaleString()}</Money></div>
                         <div className={`text-sm font-medium flex items-center justify-end gap-1 ${searchResult.marketData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                            {searchResult.marketData.change >= 0 ? <TrendingUp className="w-3 h-3"/> : <TrendingDown className="w-3 h-3" />}
                            {searchResult.marketData.change.toFixed(2)} ({searchResult.marketData.changePercent.toFixed(2)}%)
@@ -688,15 +689,15 @@ export default function StockRecommendations() {
                       </div>
                       <div>
                         <div className="text-muted-foreground text-xs">Day High</div>
-                        <div className="font-medium">₹{searchResult.marketData.high.toLocaleString()}</div>
+                        <div className="font-medium"><Money>₹{searchResult.marketData.high.toLocaleString()}</Money></div>
                       </div>
                       <div>
                         <div className="text-muted-foreground text-xs">Day Low</div>
-                        <div className="font-medium">₹{searchResult.marketData.low.toLocaleString()}</div>
+                        <div className="font-medium"><Money>₹{searchResult.marketData.low.toLocaleString()}</Money></div>
                       </div>
                       <div>
                         <div className="text-muted-foreground text-xs">Prev. Close</div>
-                        <div className="font-medium">₹{(searchResult.marketData.price - searchResult.marketData.change).toFixed(2)}</div>
+                        <div className="font-medium"><Money>₹{(searchResult.marketData.price - searchResult.marketData.change).toFixed(2)}</Money></div>
                       </div>
                    </div>
                  </div>
@@ -768,7 +769,7 @@ export default function StockRecommendations() {
                           <div className="lg:col-span-3 grid grid-cols-2 gap-4">
                             <div>
                               <p className="text-xs text-muted-foreground">Current Price</p>
-                              <p className="text-xl font-bold">₹{stock.currentPrice.toFixed(2)}</p>
+                              <p className="text-xl font-bold"><Money>₹{stock.currentPrice.toFixed(2)}</Money></p>
                               <p
                                 className={`text-xs flex items-center gap-1 ${
                                   stock.marketData.changePercent >= 0 ? 'text-green-600' : 'text-red-600'
@@ -784,7 +785,7 @@ export default function StockRecommendations() {
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Target Price</p>
-                              <p className="text-xl font-bold text-green-600">₹{stock.targetPrice.toFixed(2)}</p>
+                              <p className="text-xl font-bold text-green-600"><Money>₹{stock.targetPrice.toFixed(2)}</Money></p>
                               <p className="text-xs text-muted-foreground">
                                 Upside: {(((stock.targetPrice - stock.currentPrice) / stock.currentPrice) * 100).toFixed(1)}%
                               </p>
@@ -815,7 +816,7 @@ export default function StockRecommendations() {
                           <div className="flex items-center gap-2 text-sm">
                             <AlertTriangle className="w-4 h-4 text-red-500" />
                             <span className="text-muted-foreground">Stop Loss:</span>
-                            <span className="font-semibold">₹{stock.stopLoss.toFixed(2)}</span>
+                            <span className="font-semibold"><Money>₹{stock.stopLoss.toFixed(2)}</Money></span>
                           </div>
                           <div className="text-xs text-muted-foreground">
                             Volume: {(stock.marketData.volume / 1000000).toFixed(2)}M

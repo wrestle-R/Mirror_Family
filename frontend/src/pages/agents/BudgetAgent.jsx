@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Money } from "@/components/ui/money";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -237,7 +238,7 @@ const BudgetAgent = () => {
                                                 <div className="flex justify-between items-start gap-2">
                                                     <CardTitle className="text-lg">{rec.category}</CardTitle>
                                                     <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-full border border-green-200 dark:border-green-800 whitespace-nowrap flex items-center gap-1">
-                                                        <TrendingDown size={12} /> Save ₹{rec.potentialSavings?.toLocaleString()}
+                                                        <TrendingDown size={12} /> Save <Money>₹{rec.potentialSavings?.toLocaleString()}</Money>
                                                     </span>
                                                 </div>
                                                 <CardDescription className="text-xs font-medium text-orange-600/90 dark:text-orange-400">{rec.benchmark}</CardDescription>
@@ -246,11 +247,11 @@ const BudgetAgent = () => {
                                                 <div className="grid grid-cols-2 gap-2 text-sm bg-muted/40 p-2 rounded-lg">
                                                     <div>
                                                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current</p>
-                                                        <p className="font-semibold text-red-500">₹{rec.currentSpending?.toLocaleString()}</p>
+                                                        <p className="font-semibold text-red-500"><Money>₹{rec.currentSpending?.toLocaleString()}</Money></p>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Target</p>
-                                                        <p className="font-semibold text-green-500">₹{rec.suggestedSpending?.toLocaleString()}</p>
+                                                        <p className="font-semibold text-green-500"><Money>₹{rec.suggestedSpending?.toLocaleString()}</Money></p>
                                                     </div>
                                                 </div>
 

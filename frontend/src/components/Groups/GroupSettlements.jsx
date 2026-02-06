@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import groupsApi from '@/config/groupsApi';
+import { Money } from '@/components/ui/money';
 import {
   Dialog,
   DialogContent,
@@ -143,7 +144,7 @@ export default function GroupSettlements({ groupId, group, currentUserId, onUpda
                 <div className="ml-6 flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-2xl font-bold text-primary">
-                      ₹{settlement.amount.toLocaleString('en-IN')}
+                      <Money>₹{settlement.amount.toLocaleString('en-IN')}</Money>
                     </p>
                   </div>
 
@@ -188,7 +189,7 @@ export default function GroupSettlements({ groupId, group, currentUserId, onUpda
                 max={selectedSettlement?.amount}
               />
               <p className="text-xs text-muted-foreground">
-                Total owed: ₹{selectedSettlement?.amount.toLocaleString('en-IN')}
+                Total owed: <Money>₹{selectedSettlement?.amount.toLocaleString('en-IN')}</Money>
               </p>
             </div>
           </div>

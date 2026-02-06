@@ -1,6 +1,7 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2, ChevronDown } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2, ChevronDown, EyeOff, Eye } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
+import { useStealth } from "../../context/StealthContext"
 import { cn } from "@/lib/utils"
 import { useLocation, useNavigate, Link } from "react-router-dom"
 import { useState } from "react"
@@ -111,6 +112,7 @@ const itemGroups = {
 export function AppSidebar() {
   const { user, logout } = useUser();
   const { theme, setTheme } = useTheme();
+  const { stealthMode, toggleStealth } = useStealth();
   const { state } = useSidebar();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState({
@@ -204,6 +206,12 @@ export function AppSidebar() {
             <SidebarMenuButton onClick={toggleTheme} tooltip="Toggle Theme">
               {theme === "dark" ? <Sun /> : <Moon />}
               <span>Toggle Theme</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={toggleStealth} tooltip="Stealth Mode">
+              {stealthMode ? <Eye /> : <EyeOff />}
+              <span>Stealth Mode</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

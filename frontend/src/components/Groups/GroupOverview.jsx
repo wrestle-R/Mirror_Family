@@ -6,6 +6,7 @@ import { Users, Receipt, DollarSign } from 'lucide-react';
 import MemberList from './MemberList';
 import groupsApi from '@/config/groupsApi';
 import { toast } from 'sonner';
+import { Money } from '@/components/ui/money';
 
 export default function GroupOverview({ group, isOwner, currentUserId, onUpdate, refreshKey }) {
   const allMembers = [group.owner, ...(group.members || [])];
@@ -74,7 +75,7 @@ export default function GroupOverview({ group, isOwner, currentUserId, onUpdate,
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Spent</p>
-              <p className="text-2xl font-bold">₹{totalExpenses.toLocaleString('en-IN')}</p>
+              <p className="text-2xl font-bold"><Money>₹{totalExpenses.toLocaleString('en-IN')}</Money></p>
             </div>
           </div>
         </Card>
