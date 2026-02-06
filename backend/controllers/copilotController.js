@@ -78,10 +78,7 @@ exports.getCopilotContext = async (req, res) => {
     const totalExpenses = profile ? profile.getTotalExpenses() : 0;
     const netBalance = (profile?.monthlyIncome || 0) - totalExpenses - (profile?.debtPaymentMonthly || 0);
 
-    // Build context object
     const context = {
-      name: student.name,
-      email: student.email,
       profile: {
         monthlyIncome: profile?.monthlyIncome || 0,
         monthlyBudget: profile?.monthlyBudget || 0,
@@ -90,31 +87,17 @@ exports.getCopilotContext = async (req, res) => {
         totalDebt: profile?.totalDebt || 0,
         debtPaymentMonthly: profile?.debtPaymentMonthly || 0,
         totalExpenses: totalExpenses,
-        netBalance: netBalance
+        netBalance: netBalance,
       },
       thisMonth: {
         income: incomeData.total,
         expenses: expenseData.total,
         transactions: incomeData.count + expenseData.count,
-        topExpenseCategories: topExpenses.map(e => ({
-          category: e._id,
-          amount: e.total
-        }))
       },
       goals: {
         activeShortTerm: activeShortTermGoals.length,
         activeLongTerm: activeLongTermGoals.length,
-        upcomingDeadlines: [...activeShortTermGoals, ...activeLongTermGoals]
-          .filter(g => g.deadline)
-          .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-          .slice(0, 3)
-          .map(g => ({
-            title: g.title,
-            deadline: g.deadline,
-            targetAmount: g.targetAmount,
-            currentAmount: g.currentAmount
-          }))
-      }
+      },
     };
 
     res.status(200).json(context);
@@ -127,7 +110,7 @@ exports.getCopilotContext = async (req, res) => {
 // POST copilot chat - handles chat messages with AI
 exports.sendCopilotMessage = async (req, res) => {
   try {
-    const { firebaseUid, message, mode, conversationHistory } = req.body;
+    const { firebaseUid, message, mode } = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ message: 'Message is required' });
@@ -154,7 +137,8 @@ exports.sendCopilotMessage = async (req, res) => {
     })
     .sort({ date: -1 })
     .limit(50)
-    .select('type amount category description date');
+    // Keep selection numeric-only to avoid leaking merchant/notes/details to the LLM
+    .select('type amount category date');
 
     // Get agent data if available
     const agentData = mode ? await AgentData.findOne({ student: studentId, type: mode }) : null;
@@ -172,52 +156,47 @@ exports.sendCopilotMessage = async (req, res) => {
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Build context for AI
-    const userContext = `
-USER FINANCIAL PROFILE:
-Name: ${student.name}
-Monthly Income: ₹${profile?.monthlyIncome || 0}
-Monthly Budget: ₹${profile?.monthlyBudget || 0}
-Current Savings: ₹${profile?.currentSavings || 0}
-Savings Goal: ₹${profile?.savingsGoal || 0}
-Total Debt: ₹${profile?.totalDebt || 0}
-Monthly Debt Payment: ₹${profile?.debtPaymentMonthly || 0}
+    const activeShortGoals = profile?.shortTermGoals?.filter(g => !g.isCompleted) || [];
+    const activeLongGoals = profile?.longTermGoals?.filter(g => !g.isCompleted) || [];
 
-MONTHLY EXPENSES BREAKDOWN:
-- Rent: ₹${profile?.rentExpense || 0}
-- Food: ₹${profile?.foodExpense || 0}
-- Transportation: ₹${profile?.transportationExpense || 0}
-- Utilities: ₹${profile?.utilitiesExpense || 0}
-- Other: ₹${profile?.otherExpenses || 0}
-- Total Expenses: ₹${totalExpenses}
-- Net Savings Potential: ₹${netSavingsPotential}
+    const shortGoalsTargetTotal = activeShortGoals.reduce((sum, g) => sum + (g.targetAmount || 0), 0);
+    const shortGoalsCurrentTotal = activeShortGoals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
+    const longGoalsTargetTotal = activeLongGoals.reduce((sum, g) => sum + (g.targetAmount || 0), 0);
+    const longGoalsCurrentTotal = activeLongGoals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
 
-LAST 30 DAYS ACTIVITY:
-- Total Income: ₹${incomeTotal}
-- Total Expenses: ₹${expenseTotal}
-- Net Balance: ₹${incomeTotal - expenseTotal}
-- Transactions Count: ${recentTransactions.length}
+    // Numeric-only context (no names, emails, goal titles, transaction descriptions, or other unique identifiers)
+    const numericContext = {
+      monthlyIncome: profile?.monthlyIncome || 0,
+      monthlyBudget: profile?.monthlyBudget || 0,
+      currentSavings: profile?.currentSavings || 0,
+      savingsGoal: profile?.savingsGoal || 0,
+      totalDebt: profile?.totalDebt || 0,
+      debtPaymentMonthly: profile?.debtPaymentMonthly || 0,
+      rentExpense: profile?.rentExpense || 0,
+      foodExpense: profile?.foodExpense || 0,
+      transportationExpense: profile?.transportationExpense || 0,
+      utilitiesExpense: profile?.utilitiesExpense || 0,
+      otherExpenses: profile?.otherExpenses || 0,
+      totalExpenses,
+      netSavingsPotential,
+      activity30d: {
+        incomeTotal,
+        expenseTotal,
+        netBalance: incomeTotal - expenseTotal,
+        transactionsCount: recentTransactions.length,
+      },
+      goals: {
+        shortTermActiveCount: activeShortGoals.length,
+        longTermActiveCount: activeLongGoals.length,
+        shortTermTargetTotal: shortGoalsTargetTotal,
+        shortTermCurrentTotal: shortGoalsCurrentTotal,
+        longTermTargetTotal: longGoalsTargetTotal,
+        longTermCurrentTotal: longGoalsCurrentTotal,
+      },
+      investmentsAmount: profile?.investmentsAmount || 0,
+    };
 
-ACTIVE GOALS:
-${profile?.shortTermGoals?.filter(g => !g.isCompleted).map(g => 
-  `- ${g.title} (Target: ₹${g.targetAmount}, Current: ₹${g.currentAmount || 0}, Deadline: ${g.deadline ? new Date(g.deadline).toLocaleDateString('en-IN') : 'No deadline'})`
-).join('\n') || 'No active short-term goals'}
-
-${profile?.longTermGoals?.filter(g => !g.isCompleted).map(g => 
-  `- ${g.title} (Target: ₹${g.targetAmount}, Current: ₹${g.currentAmount || 0}, Deadline: ${g.deadline ? new Date(g.deadline).toLocaleDateString('en-IN') : 'No deadline'})`
-).join('\n') || 'No active long-term goals'}
-
-RECENT TRANSACTIONS (Last 10):
-${recentTransactions.slice(0, 10).map(t => 
-  `- ${new Date(t.date).toLocaleDateString('en-IN')}: ${t.type === 'income' ? '+' : '-'}₹${t.amount} (${t.category}) ${t.description ? '- ' + t.description : ''}`
-).join('\n')}
-
-FINANCIAL PROFILE:
-- Risk Tolerance: ${profile?.riskTolerance || 'Unknown'}
-- Financial Literacy: ${profile?.financialLiteracy || 'Unknown'}
-- Investment Type: ${profile?.investmentType || 'None'}
-- Investments Amount: ₹${profile?.investmentsAmount || 0}
-`;
+    const userContext = `NUMERIC_CONTEXT_JSON:\n${JSON.stringify(numericContext)}`;
 
     // Mode-specific system prompts
     const modePrompts = {
@@ -227,7 +206,12 @@ FINANCIAL PROFILE:
       investment: 'You are an Investment Scout guiding beginners in Indian markets. Recommend suitable stocks, mutual funds, SIPs, and explain risk vs returns in simple terms.'
     };
 
-    const systemPrompt = `You are Money Copilot, an AI financial advisor for students in India. You have access to the user's complete financial profile and transaction history.
+    const systemPrompt = `You are Money Copilot, an AI financial advisor for students in India.
+
+  PRIVACY REQUIREMENTS:
+  - The user must not be identifiable from the context.
+  - You will receive ONLY aggregated numeric financial data. Do not request or infer name, email, college, employer, addresses, phone numbers, merchant names, or any uniquely identifying details.
+  - Do not reference specific transactions, merchants, goal titles, or dates.
 
 ${mode ? modePrompts[mode] : 'Provide comprehensive financial advice across budgeting, savings, debt management, and investments.'}
 
@@ -235,7 +219,7 @@ GUIDELINES:
 - Always use INR (₹) for amounts, never dollars
 - Be conversational, friendly, and encouraging
 - Provide specific, actionable advice with exact numbers from their data
-- Reference their actual transactions and goals when relevant
+  - Base advice strictly on the numeric context
 - Keep responses concise (2-4 paragraphs max)
 - If you don't have enough data, ask clarifying questions
 - Never make up numbers - only use data provided in the context
@@ -245,9 +229,9 @@ ${userContext}
 Based on this context, answer the user's question thoughtfully and provide actionable financial advice.`;
 
     // Build messages for Groq
+    // Intentionally do NOT include conversation history to avoid leaking any user-typed PII.
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...(conversationHistory || []),
       { role: 'user', content: message }
     ];
 
