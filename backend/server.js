@@ -11,6 +11,8 @@ const copilotRoutes = require('./routes/copilotRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const goalAnalysisRoutes = require('./routes/goalAnalysisRoutes');
+const timeMachineRoutes = require('./routes/future/timeMachineRoutes');
+const synthesisRoutes = require('./routes/synthesisRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -29,6 +31,8 @@ app.use('/api/copilot', copilotRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/stocks', stockRoutes);
 app.use('/api/goal-analysis', goalAnalysisRoutes);
+app.use('/api/future', timeMachineRoutes);
+app.use('/api/synthesis', synthesisRoutes);
 
 
 app.use((req, res, next) => {

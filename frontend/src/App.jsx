@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { UserProvider } from "@/context/UserContext";
+import { SandboxProvider } from "@/context/SandboxContext";
 import { Toaster } from "@/components/ui/sonner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Dashboard/Layout";
@@ -19,7 +20,8 @@ import GroupDetailsPage from "@/pages/GroupDetailsPage";
 import StockRecommendations from "@/pages/StockRecommendations";
 import NotFound from "@/pages/NotFound";
 import FinancialCommandCenter from "@/pages/FinancialCommandCenter";
-
+import TimeMachine from "@/pages/TimeMachine";
+import CouncilSynthesis from "@/pages/CouncilSynthesis";
 
 console.log("App: Initializing Money Council application");
 
@@ -29,9 +31,10 @@ function App() {
   return (
     <ThemeProvider>
       <UserProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Landing />} />
+        <SandboxProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               element={
@@ -54,11 +57,14 @@ function App() {
               <Route path="agent/debt" element={<DebtAgent />} />
               <Route path="agent/investment" element={<InvestmentAgent />} />
               <Route path="command-center" element={<FinancialCommandCenter />} />
+              <Route path="time-machine" element={<TimeMachine />} />
+              <Route path="council-synthesis" element={<CouncilSynthesis />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
         <Toaster position="top-right" richColors />
+        </SandboxProvider>
       </UserProvider>
     </ThemeProvider>
   );

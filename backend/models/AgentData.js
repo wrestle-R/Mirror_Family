@@ -8,7 +8,7 @@ const agentDataSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['budget', 'savings', 'debt', 'investment'],
+    enum: ['budget', 'savings', 'debt', 'investment', 'time-machine'],
     required: true
   },
   data: {
