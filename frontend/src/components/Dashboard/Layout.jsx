@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Sparkles } from "lucide-react"
 
 export function Layout({ children }) {
-  const [copilotOpen, setCopilotOpen] = useState(true)
+  const [copilotOpen, setCopilotOpen] = useState(false)
   const rightInsetClassName = useMemo(() => {
     if (!copilotOpen) return "transition-[margin] duration-300 ease-in-out"
     return "xl:mr-[380px] transition-[margin] duration-300 ease-in-out"

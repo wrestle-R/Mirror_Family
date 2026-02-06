@@ -1,4 +1,6 @@
 
+import { addMonths } from "date-fns";
+
 /**
  * Utility to calculate goal timeline metrics.
  * Aggregates all goals into a single cumulative timeline.
@@ -7,9 +9,10 @@
  * 1. Sort goals by target amount (smallest "wins" first).
  * 2. Map them onto a cumulative 0-100% timeline.
  * 3. Compare current savings against this cumulative path.
+ * 4. Calculate projected achievement dates based on monthly contribution.
  */
 
-export const calculateGoalTimeline = (currentSavings = 0, shortTermGoals = [], longTermGoals = []) => {
+export const calculateGoalTimeline = (currentSavings = 0, shortTermGoals = [], longTermGoals = [], monthlyContribution = 0) => {
     // 1. Combine and Filter
     const allGoals = [...shortTermGoals, ...longTermGoals]
         .filter(g => g.targetAmount > 0)
@@ -38,6 +41,8 @@ export const calculateGoalTimeline = (currentSavings = 0, shortTermGoals = [], l
     const progress = Math.min(100, Math.max(0, rawProgress));
 
     let runningTotal = 0;
+    const now = new Date();
+
     const milestones = allGoals.map(goal => {
         runningTotal += goal.targetAmount;
 
@@ -48,6 +53,14 @@ export const calculateGoalTimeline = (currentSavings = 0, shortTermGoals = [], l
         // Using cumulative logic: You satisfy the smallest goals first.
         const isReached = currentSavings >= runningTotal;
 
+        // Calculate projection
+        let projectedDate = null;
+        if (!isReached && monthlyContribution > 0) {
+            const remaining = runningTotal - currentSavings;
+            const monthsNeeded = Math.ceil(remaining / monthlyContribution);
+            projectedDate = addMonths(now, monthsNeeded);
+        }
+
         return {
             id: goal.id || goal._id || Math.random(),
             title: goal.title,
@@ -56,7 +69,9 @@ export const calculateGoalTimeline = (currentSavings = 0, shortTermGoals = [], l
             cumulativeTarget: runningTotal,
             position,
             isReached,
-            type: goal.type
+            type: goal.type,
+            deadline: goal.deadline,
+            projectedDate
         };
     });
 
