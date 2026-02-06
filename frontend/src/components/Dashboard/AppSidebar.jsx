@@ -1,4 +1,4 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { cn } from "@/lib/utils"
@@ -26,6 +26,11 @@ const items = [
     icon: LayoutDashboard,
   },
   {
+    title: "Command Center",
+    url: "/command-center",
+    icon: Activity,
+  },
+  {
     title: "Transactions",
     url: "/transactions",
     icon: Receipt,
@@ -39,6 +44,11 @@ const items = [
     title: "Split",
     url: "/groups",
     icon: Users,
+  },
+  {
+    title: "Stock Picks",
+    url: "/stocks",
+    icon: CandlestickChart,
   },
   {
     title: "Budget Agent",
@@ -99,8 +109,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
+                  <SidebarMenuButton
+                    asChild
                     isActive={isActive(item.url)}
                     tooltip={item.title}
                   >

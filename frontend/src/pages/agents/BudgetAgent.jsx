@@ -157,7 +157,7 @@ const BudgetAgent = () => {
                 </div>
             </motion.div>
 
-            <elevenlabs-convai agent-id="agent_7101kg2q76p1ewz9x195s6yt4twz" dynamic-variables={JSON.stringify(convaiVariables)} />
+            {/* <elevenlabs-convai agent-id="agent_7101kg2q76p1ewz9x195s6yt4twz" dynamic-variables={JSON.stringify(convaiVariables)} /> */}
 
             {!data ? (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
