@@ -22,23 +22,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+// Pastel palette (Tailwind-ish hex values) so charts don't depend on theme CSS vars.
+const PASTEL = {
+  violet: "#C4B5FD", // violet-300
+  indigo: "#A5B4FC", // indigo-300
+  sky: "#7DD3FC", // sky-300
+  teal: "#5EEAD4", // teal-300
+  emerald: "#6EE7B7", // emerald-300
+  amber: "#FCD34D", // amber-300
+  rose: "#FDA4AF", // rose-300
+};
+
 const PIE_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--destructive))"
+  PASTEL.violet,
+  PASTEL.sky,
+  PASTEL.teal,
+  PASTEL.emerald,
+  PASTEL.amber,
+  PASTEL.rose,
 ];
-// Keep NEON_PIE but map to some other variables or keep as is if "Neon" is the theme for optimized
-// But user asked for shadcn colors. Let's make NEON_PIE also use variables if possible or just use chart variables again but maybe different order.
+
 const NEON_PIE = [
-  "hsl(var(--primary))", 
-  "hsl(var(--secondary))", 
-  "hsl(var(--accent))", 
-  "hsl(var(--chart-1))", 
-  "hsl(var(--chart-2))", 
-  "hsl(var(--chart-3))"
+  PASTEL.indigo,
+  PASTEL.emerald,
+  PASTEL.sky,
+  PASTEL.violet,
+  PASTEL.teal,
+  PASTEL.rose,
 ];
 
 const fmt = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
@@ -351,22 +361,12 @@ const TimeMachine = () => {
               <CardContent className="pt-6">
                 <ResponsiveContainer width="100%" height={350}>
                   <AreaChart data={wealthTimeline}>
-                    <defs>
-                      <linearGradient id="tmCurrentGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="tmOptGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="year" fontSize={12} />
                     <YAxis fontSize={12} tickFormatter={(v) => fmtLakh(v)} />
                     <RTooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                    <Area type="monotone" dataKey="Current Habits" stroke="hsl(var(--destructive))" fill="url(#tmCurrentGrad)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="Optimized Path" stroke="hsl(var(--primary))" fill="url(#tmOptGrad)" strokeWidth={2.5} strokeDasharray="" />
+                    <Area type="monotone" dataKey="Current Habits" stroke={PASTEL.rose} fill={PASTEL.rose} fillOpacity={0.18} strokeWidth={2} />
+                    <Area type="monotone" dataKey="Optimized Path" stroke={PASTEL.violet} fill={PASTEL.violet} fillOpacity={0.18} strokeWidth={2.5} />
                     <Legend />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -390,8 +390,8 @@ const TimeMachine = () => {
                       <XAxis dataKey="year" fontSize={11} />
                       <YAxis fontSize={11} tickFormatter={(v) => fmtLakh(v)} />
                       <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                      <Area type="monotone" dataKey="Current" stroke="hsl(var(--chart-3))" fill="hsl(var(--chart-3))" fillOpacity={0.1} strokeWidth={2} />
-                      <Area type="monotone" dataKey="Optimized" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Current" stroke={PASTEL.sky} fill={PASTEL.sky} fillOpacity={0.18} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Optimized" stroke={PASTEL.emerald} fill={PASTEL.emerald} fillOpacity={0.18} strokeWidth={2} />
                       <Legend />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -413,8 +413,8 @@ const TimeMachine = () => {
                       <XAxis dataKey="year" fontSize={11} />
                       <YAxis fontSize={11} tickFormatter={(v) => fmtLakh(v)} />
                       <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                      <Area type="monotone" dataKey="Current" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} strokeWidth={2} />
-                      <Area type="monotone" dataKey="Optimized" stroke="hsl(var(--chart-4))" fill="hsl(var(--chart-4))" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Current" stroke={PASTEL.amber} fill={PASTEL.amber} fillOpacity={0.18} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Optimized" stroke={PASTEL.teal} fill={PASTEL.teal} fillOpacity={0.18} strokeWidth={2} />
                       <Legend />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -442,8 +442,8 @@ const TimeMachine = () => {
                         <XAxis dataKey="name" fontSize={12} />
                         <YAxis fontSize={12} tickFormatter={(v) => `₹${v}`} />
                         <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                        <Bar dataKey="Current" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
-                        <Bar dataKey="Optimized" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="Current" fill={PASTEL.rose} radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="Optimized" fill={PASTEL.violet} radius={[6, 6, 0, 0]} />
                         <Legend />
                       </BarChart>
                     </ResponsiveContainer>
