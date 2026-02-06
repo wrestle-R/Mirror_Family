@@ -22,8 +22,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const PIE_COLORS = ["#8b5cf6", "#06b6d4", "#f59e0b", "#10b981", "#ef4444", "#6366f1"];
-const NEON_PIE = ["#00f0ff", "#bf5af2", "#30d158", "#ff453a", "#ffd60a", "#64d2ff"];
+const PIE_COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--destructive))"
+];
+// Keep NEON_PIE but map to some other variables or keep as is if "Neon" is the theme for optimized
+// But user asked for shadcn colors. Let's make NEON_PIE also use variables if possible or just use chart variables again but maybe different order.
+const NEON_PIE = [
+  "hsl(var(--primary))", 
+  "hsl(var(--secondary))", 
+  "hsl(var(--accent))", 
+  "hsl(var(--chart-1))", 
+  "hsl(var(--chart-2))", 
+  "hsl(var(--chart-3))"
+];
 
 const fmt = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
 const fmtLakh = (v) => {
@@ -145,21 +161,21 @@ const TimeMachine = () => {
       <div className="flex-1 p-6 pt-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto text-center py-20">
           <div className="relative inline-block mb-8">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto border border-purple-500/30">
-              <Clock className="w-16 h-16 text-purple-400" />
+            <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center mx-auto border border-primary/20">
+              <Clock className="w-16 h-16 text-primary" />
             </div>
-            <div className="absolute -top-2 -right-2 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center animate-bounce">
-              <Zap className="w-4 h-4 text-white" />
+            <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-bounce">
+              <Zap className="w-4 h-4 text-primary-foreground" />
             </div>
           </div>
           <h1 className="text-4xl font-black mb-4">Financial Time Machine</h1>
           <p className="text-lg text-muted-foreground mb-2">See where your money takes you in 10 years</p>
           <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
             Our AI analyzes your income, expenses, debt, and savings to project two possible futures:
-            your <span className="text-red-400 font-semibold">current trajectory</span> vs an{" "}
-            <span className="text-purple-400 font-semibold">optimized path</span>.
+            your <span className="text-destructive font-semibold">current trajectory</span> vs an{" "}
+            <span className="text-primary font-semibold">optimized path</span>.
           </p>
-          <Button size="lg" onClick={handleGenerate} disabled={generating} className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white shadow-lg shadow-purple-500/25 text-lg px-8 py-6">
+          <Button size="lg" onClick={handleGenerate} disabled={generating} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg text-lg px-8 py-6">
             {generating ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Rocket className="w-5 h-5 mr-2" />}
             {generating ? "Calculating 2036..." : "Launch Time Machine"}
           </Button>
@@ -175,21 +191,21 @@ const TimeMachine = () => {
     <div className="flex-1 space-y-8 p-6 pt-4 pb-20 min-h-screen relative">
       {/* ─── Subtle bg effect ─── */}
       <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-background" />
       </div>
 
       {/* ═══ HEADER ═══ */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30">
-              <Clock className="w-7 h-7 text-purple-400" />
+            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+              <Clock className="w-7 h-7 text-primary" />
             </div>
             Financial Time Machine
           </h1>
           <p className="text-muted-foreground mt-1">Your 10-year projection — 2026 → 2036</p>
         </div>
-        <Button onClick={handleGenerate} disabled={generating} variant="outline" className="gap-2 border-purple-500/30 hover:bg-purple-500/10">
+        <Button onClick={handleGenerate} disabled={generating} variant="outline" className="gap-2">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           Regenerate
         </Button>
@@ -197,27 +213,25 @@ const TimeMachine = () => {
 
       {/* ═══ WEALTH GAP HERO ═══ */}
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
-        <Card className="overflow-hidden border-0 bg-gradient-to-r from-slate-900 via-purple-950/80 to-slate-900 text-white shadow-2xl shadow-purple-500/10">
+        <Card className="overflow-hidden border">
           <CardContent className="p-8 md:p-10">
             <div className="grid md:grid-cols-3 gap-8 items-center">
               <div className="text-center md:text-left">
-                <p className="text-xs uppercase tracking-widest text-red-400 font-bold mb-1">Current Habits</p>
-                <p className="text-3xl font-black text-red-400">{fmtLakh(currentNW)}</p>
-                <p className="text-xs text-gray-400 mt-1">Net worth in 2036</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Current Habits</p>
+                <p className="text-3xl font-bold text-destructive">{fmtLakh(currentNW)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Net worth in 2036</p>
               </div>
               <div className="text-center">
-                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">THE GAP</p>
-                <p className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Wealth Gap</p>
+                <p className="text-5xl md:text-6xl font-bold text-foreground">
                   {fmtLakh(wealthGap)}
                 </p>
-                {analysis?.wealth_gap_highlight && (
-                  <p className="text-sm text-gray-300 mt-3 max-w-xs mx-auto italic">"{analysis.wealth_gap_highlight}"</p>
-                )}
+                <p className="text-xs text-muted-foreground mt-2">Potential gain with optimization</p>
               </div>
               <div className="text-center md:text-right">
-                <p className="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Optimized Path</p>
-                <p className="text-3xl font-black text-emerald-400">{fmtLakh(optimizedNW)}</p>
-                <p className="text-xs text-gray-400 mt-1">Net worth in 2036</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Optimized Path</p>
+                <p className="text-3xl font-bold text-primary">{fmtLakh(optimizedNW)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Net worth in 2036</p>
               </div>
             </div>
           </CardContent>
@@ -227,10 +241,10 @@ const TimeMachine = () => {
       {/* ═══ OPTIMIZED PLAN STEPS (at the top as requested) ═══ */}
       {analysis?.optimized_plan_steps && analysis.optimized_plan_steps.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Card className="border border-emerald-500/20 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-b border-emerald-500/20">
+          <Card className="border overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b">
               <CardTitle className="text-xl flex items-center gap-2">
-                <Rocket className="w-5 h-5 text-emerald-400" />
+                <Rocket className="w-5 h-5 text-primary" />
                 Your Optimized Financial Plan
               </CardTitle>
               <CardDescription>Follow these strategies to unlock {fmtLakh(wealthGap)} in additional wealth by 2036</CardDescription>
@@ -244,10 +258,10 @@ const TimeMachine = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + idx * 0.08 }}
                   >
-                    <Card className="h-full border-l-4 border-l-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                    <Card className="h-full border-l-4 border-l-primary hover:shadow-lg transition-all duration-300 group">
                       <CardContent className="p-5 flex flex-col gap-3">
                         <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0 text-sm font-bold text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-sm font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                             {idx + 1}
                           </div>
                           <div>
@@ -255,7 +269,7 @@ const TimeMachine = () => {
                             <p className="text-xs text-muted-foreground mt-1">{step.action}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-cyan-500 font-medium bg-cyan-500/5 px-2 py-1.5 rounded-md border border-cyan-500/10">
+                        <div className="flex items-center gap-1.5 text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1.5 rounded-md">
                           <TrendingUp className="w-3 h-3" />
                           {step.impact}
                         </div>
@@ -278,13 +292,13 @@ const TimeMachine = () => {
             <div className="flex bg-muted rounded-full p-1">
               <button
                 onClick={() => setActiveTab("optimized")}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === "optimized" ? "bg-emerald-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === "optimized" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Zap className="w-3 h-3 inline mr-1" />Optimized 2036
               </button>
               <button
                 onClick={() => setActiveTab("current")}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === "current" ? "bg-red-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === "current" ? "bg-destructive text-destructive-foreground shadow-md" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Current 2036
               </button>
@@ -330,8 +344,8 @@ const TimeMachine = () => {
         {wealthTimeline.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
             <Card className="overflow-hidden">
-              <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-purple-500" /> 10-Year Net Worth Projection</CardTitle>
+              <CardHeader className="border-b bg-muted/50">
+                <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" /> 10-Year Net Worth Projection</CardTitle>
                 <CardDescription>How your net worth evolves under both scenarios</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -339,20 +353,20 @@ const TimeMachine = () => {
                   <AreaChart data={wealthTimeline}>
                     <defs>
                       <linearGradient id="tmCurrentGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="tmOptGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="year" fontSize={12} />
                     <YAxis fontSize={12} tickFormatter={(v) => fmtLakh(v)} />
                     <RTooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                    <Area type="monotone" dataKey="Current Habits" stroke="#ef4444" fill="url(#tmCurrentGrad)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="Optimized Path" stroke="#10b981" fill="url(#tmOptGrad)" strokeWidth={2.5} strokeDasharray="" />
+                    <Area type="monotone" dataKey="Current Habits" stroke="hsl(var(--destructive))" fill="url(#tmCurrentGrad)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Optimized Path" stroke="hsl(var(--primary))" fill="url(#tmOptGrad)" strokeWidth={2.5} strokeDasharray="" />
                     <Legend />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -366,8 +380,8 @@ const TimeMachine = () => {
           {savingsTimeline.length > 0 && (
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
               <Card className="h-full">
-                <CardHeader className="border-b bg-muted/30">
-                  <CardTitle className="flex items-center gap-2 text-base"><PiggyBank className="w-4 h-4 text-emerald-500" /> Savings Growth</CardTitle>
+                <CardHeader className="border-b bg-muted/50">
+                  <CardTitle className="flex items-center gap-2 text-base"><PiggyBank className="w-4 h-4 text-primary" /> Savings Growth</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <ResponsiveContainer width="100%" height={260}>
@@ -376,8 +390,8 @@ const TimeMachine = () => {
                       <XAxis dataKey="year" fontSize={11} />
                       <YAxis fontSize={11} tickFormatter={(v) => fmtLakh(v)} />
                       <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                      <Area type="monotone" dataKey="Current" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} strokeWidth={2} />
-                      <Area type="monotone" dataKey="Optimized" stroke="#10b981" fill="#10b981" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Current" stroke="hsl(var(--chart-3))" fill="hsl(var(--chart-3))" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Optimized" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.1} strokeWidth={2} />
                       <Legend />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -389,8 +403,8 @@ const TimeMachine = () => {
           {debtTimeline.length > 0 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
               <Card className="h-full">
-                <CardHeader className="border-b bg-muted/30">
-                  <CardTitle className="flex items-center gap-2 text-base"><Flame className="w-4 h-4 text-red-500" /> Debt Reduction</CardTitle>
+                <CardHeader className="border-b bg-muted/50">
+                  <CardTitle className="flex items-center gap-2 text-base"><Flame className="w-4 h-4 text-destructive" /> Debt Reduction</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <ResponsiveContainer width="100%" height={260}>
@@ -399,8 +413,8 @@ const TimeMachine = () => {
                       <XAxis dataKey="year" fontSize={11} />
                       <YAxis fontSize={11} tickFormatter={(v) => fmtLakh(v)} />
                       <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                      <Area type="monotone" dataKey="Current" stroke="#ef4444" fill="#ef4444" fillOpacity={0.1} strokeWidth={2} />
-                      <Area type="monotone" dataKey="Optimized" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Current" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} strokeWidth={2} />
+                      <Area type="monotone" dataKey="Optimized" stroke="hsl(var(--chart-4))" fill="hsl(var(--chart-4))" fillOpacity={0.1} strokeWidth={2} />
                       <Legend />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -414,7 +428,7 @@ const TimeMachine = () => {
         {ob && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <Card className="overflow-hidden">
-              <CardHeader className="border-b bg-muted/30">
+              <CardHeader className="border-b bg-muted/50">
                 <CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-500" /> Budget Optimization Breakdown</CardTitle>
                 <CardDescription>Where you save money — Current vs Optimized monthly spending (today's values)</CardDescription>
               </CardHeader>
@@ -428,8 +442,8 @@ const TimeMachine = () => {
                         <XAxis dataKey="name" fontSize={12} />
                         <YAxis fontSize={12} tickFormatter={(v) => `₹${v}`} />
                         <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v) => [fmt(v)]} />
-                        <Bar dataKey="Current" fill="#ef4444" radius={[6, 6, 0, 0]} />
-                        <Bar dataKey="Optimized" fill="#10b981" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="Current" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="Optimized" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                         <Legend />
                       </BarChart>
                     </ResponsiveContainer>
@@ -437,20 +451,20 @@ const TimeMachine = () => {
 
                   {/* Summary side panel */}
                   <div className="lg:col-span-2 flex flex-col justify-center gap-4">
-                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
-                      <p className="text-xs uppercase tracking-wider text-red-400 font-bold">Current Monthly</p>
-                      <p className="text-2xl font-black text-red-500 mt-1">{fmt(ob.todayTotal)}</p>
+                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                      <p className="text-xs uppercase tracking-wider text-destructive font-bold">Current Monthly</p>
+                      <p className="text-2xl font-black text-destructive mt-1">{fmt(ob.todayTotal)}</p>
                     </div>
                     <div className="flex items-center justify-center">
                       <ArrowRight className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                      <p className="text-xs uppercase tracking-wider text-emerald-400 font-bold">Optimized Monthly</p>
-                      <p className="text-2xl font-black text-emerald-500 mt-1">{fmt(ob.todayOptimizedTotal)}</p>
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                      <p className="text-xs uppercase tracking-wider text-primary font-bold">Optimized Monthly</p>
+                      <p className="text-2xl font-black text-primary mt-1">{fmt(ob.todayOptimizedTotal)}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-center">
-                      <p className="text-xs uppercase tracking-wider text-purple-400 font-bold">Monthly Savings Unlocked</p>
-                      <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mt-1">
+                    <div className="p-4 rounded-xl bg-accent border border-border text-center">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Monthly Savings Unlocked</p>
+                      <p className="text-3xl font-black text-primary mt-1">
                         {fmt(ob.monthlySavingsUnlocked)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">That's {fmt(ob.monthlySavingsUnlocked * 12)}/year extra</p>
@@ -466,10 +480,10 @@ const TimeMachine = () => {
         {(currentPie.length > 0 || optimizedPie.length > 0) && (
           <div className="grid gap-6 lg:grid-cols-2">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
-              <Card className="border-t-4 border-t-red-500">
+              <Card className="border-t-4 border-t-destructive">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-red-400" /> 2036 Expenses — Current Habits
+                    <AlertTriangle className="w-4 h-4 text-destructive" /> 2036 Expenses — Current Habits
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -487,10 +501,10 @@ const TimeMachine = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-              <Card className="border-t-4 border-t-emerald-500">
+              <Card className="border-t-4 border-t-primary">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 2036 Expenses — Optimized
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> 2036 Expenses — Optimized
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -514,56 +528,56 @@ const TimeMachine = () => {
       {analysis && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <Card className="overflow-hidden">
-            <CardHeader className="border-b bg-muted/30">
+            <CardHeader className="border-b bg-muted/50">
               <CardTitle className="text-xl flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-500" /> AI Intelligence Report
+                <Brain className="w-5 h-5 text-primary" /> AI Intelligence Report
               </CardTitle>
               <CardDescription>Two possible futures — which one will you choose?</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="grid md:grid-cols-2">
                 {/* Dystopian — Current Path */}
-                <div className="p-6 md:border-r border-b md:border-b-0 bg-gradient-to-b from-red-950/10 to-transparent">
+                <div className="p-6 md:border-r border-b md:border-b-0 bg-destructive/5">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                    <h4 className="text-sm font-bold uppercase tracking-wider text-red-400">Current Trajectory — 2036</h4>
+                    <div className="w-3 h-3 rounded-full bg-destructive animate-pulse" />
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-destructive">Current Trajectory — 2036</h4>
                   </div>
-                  <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/15">
+                  <div className="bg-background p-4 rounded-xl border border-destructive/20">
                     <p className="text-sm text-muted-foreground leading-relaxed italic">
                       "{analysis.narrative_current}"
                     </p>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-                    <div className="p-3 rounded-lg bg-muted/40">
+                    <div className="p-3 rounded-lg bg-background border border-destructive/10">
                       <p className="text-xs text-muted-foreground">Net Worth</p>
-                      <p className="text-lg font-bold text-red-500">{fmtLakh(currentNW)}</p>
+                      <p className="text-lg font-bold text-destructive">{fmtLakh(currentNW)}</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-muted/40">
+                    <div className="p-3 rounded-lg bg-background border border-destructive/10">
                       <p className="text-xs text-muted-foreground">Expenses/mo</p>
-                      <p className="text-lg font-bold text-red-500">{cards ? fmt(cards.current.monthlyExpenses) : "—"}</p>
+                      <p className="text-lg font-bold text-destructive">{cards ? fmt(cards.current.monthlyExpenses) : "—"}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Cyberpunk — Optimized Path */}
-                <div className="p-6 bg-gradient-to-b from-emerald-950/10 to-transparent">
+                <div className="p-6 bg-primary/5">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                    <h4 className="text-sm font-bold uppercase tracking-wider text-emerald-400">Optimized Future — 2036</h4>
+                    <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-primary">Optimized Future — 2036</h4>
                   </div>
-                  <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/15">
+                  <div className="bg-background p-4 rounded-xl border border-primary/20">
                     <p className="text-sm leading-relaxed">
                       "{analysis.narrative_future}"
                     </p>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-                    <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="p-3 rounded-lg bg-background border border-primary/10">
                       <p className="text-xs text-muted-foreground">Net Worth</p>
-                      <p className="text-lg font-bold text-emerald-500">{fmtLakh(optimizedNW)}</p>
+                      <p className="text-lg font-bold text-primary">{fmtLakh(optimizedNW)}</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="p-3 rounded-lg bg-background border border-primary/10">
                       <p className="text-xs text-muted-foreground">Expenses/mo</p>
-                      <p className="text-lg font-bold text-emerald-500">{cards ? fmt(cards.optimized.monthlyExpenses) : "—"}</p>
+                      <p className="text-lg font-bold text-primary">{cards ? fmt(cards.optimized.monthlyExpenses) : "—"}</p>
                     </div>
                   </div>
                 </div>
@@ -577,14 +591,14 @@ const TimeMachine = () => {
       {analysis?.future_tips && analysis.future_tips.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
           <Card>
-            <CardHeader className="border-b bg-muted/30">
-              <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-cyan-500" /> Pro Tips from the Future</CardTitle>
+            <CardHeader className="border-b bg-muted/50">
+              <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Pro Tips from the Future</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-3 md:grid-cols-2">
                 {analysis.future_tips.map((tip, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border">
-                    <div className="w-6 h-6 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 text-xs font-bold text-cyan-500">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
                       {i + 1}
                     </div>
                     <p className="text-sm">{tip}</p>

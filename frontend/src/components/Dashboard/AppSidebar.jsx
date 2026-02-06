@@ -1,8 +1,9 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2 } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2, ChevronDown } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { cn } from "@/lib/utils"
 import { useLocation, useNavigate, Link } from "react-router-dom"
+import { useState } from "react"
 
 import {
   Sidebar,
@@ -17,81 +18,116 @@ import {
   useSidebar,
   SidebarHeader
 } from "@/components/ui/sidebar"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 // Menu items. Adapted for Money Council (Fintech for Students)
-const items = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
+const itemGroups = {
+  main: {
+    label: "Main",
+    items: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "Command Center",
+        url: "/command-center",
+        icon: Activity,
+      },
+      {
+        title: "Council Synthesis",
+        url: "/council-synthesis",
+        icon: Tv2,
+      }
+    ]
   },
-  {
-    title: "Command Center",
-    url: "/command-center",
-    icon: Activity,
+  finance: {
+    label: "Finance Tools",
+    items: [
+      {
+        title: "Transactions",
+        url: "/transactions",
+        icon: Receipt,
+      },
+      {
+        title: "Goal Plans",
+        url: "/goals",
+        icon: Target,
+      },
+      {
+        title: "Time Machine",
+        url: "/time-machine",
+        icon: Clock,
+      },
+      {
+        title: "Split",
+        url: "/groups",
+        icon: Users,
+      }
+    ]
   },
-  {
-    title: "Transactions",
-    url: "/transactions",
-    icon: Receipt,
+  investments: {
+    label: "Invest",
+    items: [
+      {
+        title: "Stock Picks",
+        url: "/stocks",
+        icon: CandlestickChart,
+      },
+      {
+        title: "Investment Scout",
+        url: "/agent/investment",
+        icon: TrendingUp,
+      }
+    ]
   },
-  {
-    title: "Goal Plans",
-    url: "/goals",
-    icon: Target,
-  },
-  {
-    title: "Split",
-    url: "/groups",
-    icon: Users,
-  },
-  {
-    title: "Stock Picks",
-    url: "/stocks",
-    icon: CandlestickChart,
-  },
-  {
-    title: "Time Machine",
-    url: "/time-machine",
-    icon: Clock,
-  },
-  {
-    title: "Budget Agent",
-    url: "/agent/budget",
-    icon: Wallet,
-  },
-  {
-    title: "Savings Agent",
-    url: "/agent/savings",
-    icon: PiggyBank,
-  },
-  {
-    title: "Debt Manager",
-    url: "/agent/debt",
-    icon: TrendingDown,
-  },
-  {
-    title: "Investment Scout",
-    url: "/agent/investment",
-    icon: TrendingUp,
-  },
-  {
-    title: "Council Synthesis",
-    url: "/council-synthesis",
-    icon: Tv2,
+  agents: {
+    label: "Agents",
+    items: [
+      {
+        title: "Budget Agent",
+        url: "/agent/budget",
+        icon: Wallet,
+      },
+      {
+        title: "Savings Agent",
+        url: "/agent/savings",
+        icon: PiggyBank,
+      },
+      {
+        title: "Debt Manager",
+        url: "/agent/debt",
+        icon: TrendingDown,
+      }
+    ]
   }
-]
+}
 
 export function AppSidebar() {
   const { user, logout } = useUser();
   const { theme, setTheme } = useTheme();
   const { state } = useSidebar();
   const location = useLocation();
+  const [openGroups, setOpenGroups] = useState({
+    main: true,
+    finance: true,
+    investments: true,
+    agents: true
+  });
 
   const isActive = (url) => location.pathname === url;
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const toggleGroup = (key) => {
+    setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -113,27 +149,46 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {Object.entries(itemGroups).map(([key, group]) => (
+          <Collapsible
+            key={key}
+            open={openGroups[key]}
+            onOpenChange={() => toggleGroup(key)}
+            className="group/collapsible"
+          >
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md px-2 py-1.5 text-sm">
+                  {group.label}
+                  <ChevronDown className={cn(
+                    "ml-auto h-4 w-4 transition-transform duration-200",
+                    openGroups[key] && "rotate-180"
+                  )} />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(item.url)}
+                          tooltip={item.title}
+                        >
+                          <Link to={item.url}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
