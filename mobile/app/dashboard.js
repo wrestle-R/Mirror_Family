@@ -193,7 +193,7 @@ export default function DashboardScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 30 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.light.primary} />}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -209,13 +209,13 @@ export default function DashboardScreen() {
         onPress={() => router.push('/add-transaction')}
         activeOpacity={0.8}
       >
-        <Text style={styles.addButtonText}>➕ Add Transaction</Text>
+        <Text style={styles.addButtonText}>+ Add Transaction</Text>
       </TouchableOpacity>
 
       {/* Filters */}
       <View style={styles.filtersSection}>
         <TouchableOpacity style={styles.filterToggle}>
-          <Text style={styles.filterToggleText}>🔍 Show Filters</Text>
+          <Text style={styles.filterToggleText}>Filters</Text>
         </TouchableOpacity>
         <FilterBar
           filterType={filterType}
@@ -240,7 +240,6 @@ export default function DashboardScreen() {
 
       {budgetsForDisplay.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateIcon}>📊</Text>
           <Text style={styles.emptyStateText}>No transactions found</Text>
           <Text style={styles.emptyStateSubtext}>Add your first transaction to get started</Text>
         </View>
@@ -263,55 +262,64 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: Colors.dark,
+    backgroundColor: Colors.light.background,
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
+    backgroundColor: Colors.light.card,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
   },
   headerTitle: {
-    color: Colors.accent,
-    fontSize: 28,
+    color: Colors.light.foreground,
+    fontSize: 32,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
   addButton: { 
-    backgroundColor: Colors.primary, 
-    marginHorizontal: 10,
-    paddingVertical: 14,
+    backgroundColor: Colors.light.primary, 
+    marginHorizontal: 16,
+    paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: Colors.primary,
+    marginBottom: 20,
+    marginTop: 16,
+    shadowColor: Colors.light.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 12,
+    elevation: 6,
   },
   addButtonText: { 
-    color: Colors.dark, 
+    color: Colors.light.primaryForeground, 
     fontWeight: '700', 
     fontSize: 16,
     letterSpacing: 0.3,
   },
   filtersSection: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   filterToggle: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: Colors.primary + '15',
-    borderRadius: 10,
-    borderColor: Colors.primary,
+    paddingVertical: 12,
+    backgroundColor: Colors.light.card,
+    borderRadius: 12,
+    borderColor: Colors.light.border,
     borderWidth: 1,
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   filterToggleText: {
-    color: Colors.primary,
+    color: Colors.light.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -320,14 +328,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   transactionsTitle: {
-    color: Colors.secondary,
+    color: Colors.light.mutedForeground,
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   transactionsList: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   emptyState: {
     alignItems: 'center',
@@ -336,18 +344,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyStateIcon: {
-    fontSize: 48,
+    fontSize: 64,
     marginBottom: 16,
   },
   emptyStateText: {
-    color: Colors.accent,
-    fontSize: 18,
+    color: Colors.light.foreground,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyStateSubtext: {
-    color: Colors.secondary,
+    color: Colors.light.mutedForeground,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,

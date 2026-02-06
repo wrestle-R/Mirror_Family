@@ -118,13 +118,13 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.container}>
-          <Text style={styles.title}>Mirror Family</Text>
+          <Text style={styles.title}>Money Council</Text>
           <Text style={styles.subtitle}>Budget Tracker</Text>
           
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor={Colors.secondary}
+            placeholderTextColor={Colors.light.mutedForeground}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -134,7 +134,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor={Colors.secondary}
+            placeholderTextColor={Colors.light.mutedForeground}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -147,7 +147,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={Colors.dark} />
+              <ActivityIndicator color={Colors.light.primaryForeground} />
             ) : (
               <Text style={styles.buttonText}>Login</Text>
             )}
@@ -159,11 +159,58 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: Colors.dark },
-  title: { fontSize: 32, fontWeight: 'bold', color: Colors.accent, marginBottom: 10, textAlign: 'center' },
-  subtitle: { fontSize: 18, color: Colors.secondary, marginBottom: 40, textAlign: 'center' },
-  input: { backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1, borderRadius: 10, padding: 15, color: Colors.accent, marginBottom: 15 },
-  button: { backgroundColor: Colors.primary, padding: 15, borderRadius: 10, alignItems: 'center' },
+  container: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    padding: 20, 
+    backgroundColor: Colors.light.background,
+  },
+  title: { 
+    fontSize: 36, 
+    fontWeight: '700', 
+    color: Colors.light.primary, 
+    marginBottom: 8, 
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  subtitle: { 
+    fontSize: 16, 
+    color: Colors.light.mutedForeground, 
+    marginBottom: 48, 
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  input: { 
+    backgroundColor: Colors.light.card, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1, 
+    borderRadius: 12, 
+    padding: 16, 
+    color: Colors.light.foreground, 
+    marginBottom: 16,
+    fontSize: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  button: { 
+    backgroundColor: Colors.light.primary, 
+    padding: 16, 
+    borderRadius: 12, 
+    alignItems: 'center',
+    shadowColor: Colors.light.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: Colors.dark, fontWeight: 'bold', fontSize: 16 },
+  buttonText: { 
+    color: Colors.light.primaryForeground, 
+    fontWeight: '700', 
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
 });

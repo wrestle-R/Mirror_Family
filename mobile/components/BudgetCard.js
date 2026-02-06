@@ -14,37 +14,21 @@ export default function BudgetCard({ budget, onDelete, onEdit }) {
   }
 
   const isIncome = budget.type === 'income';
-  const typeColor = isIncome ? Colors.primary : '#ff4444';
+  const typeColor = isIncome ? Colors.light.primary : Colors.light.destructive;
   const amountDisplay = isIncome ? '+' : '-';
   const formattedAmount = (budget.amount || 0).toLocaleString('en-IN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'income':
-        return '💰';
-      case 'expense':
-        return '💸';
-      case 'transfer':
-        return '💳';
-      case 'investment':
-        return '📈';
-      default:
-        return '📝';
-    }
-  };
-
   return (
     <View style={styles.card}>
       {/* Type Indicator Bar */}
       <View style={[styles.typeBg, { backgroundColor: typeColor + '20' }]} />
 
-      {/* Header with Title and Type Icon */}
+      {/* Header with Title */}
       <View style={styles.header}>
         <View style={styles.titleSection}>
-          <Text style={styles.typeIcon}>{getTypeIcon(budget.type)}</Text>
           <View style={styles.titleContainer}>
             <Text style={styles.title} numberOfLines={2}>
               {budget.title || budget.category}
@@ -70,7 +54,7 @@ export default function BudgetCard({ budget, onDelete, onEdit }) {
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <Text style={styles.date}>
-            📅 {new Date(budget.createdAt).toLocaleDateString('en-IN')}
+            {new Date(budget.createdAt).toLocaleDateString('en-IN')}
           </Text>
           <Text style={[styles.typeLabel, { color: typeColor }]}>
             {budget.type.toUpperCase()}
@@ -78,10 +62,10 @@ export default function BudgetCard({ budget, onDelete, onEdit }) {
         </View>
         <View style={styles.actions}>
           <TouchableOpacity onPress={() => onEdit(budget)} style={styles.actionButton}>
-            <Text style={styles.editButton}>✏️ Edit</Text>
+            <Text style={styles.editButton}>Edit</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={confirmDelete} style={styles.actionButton}>
-            <Text style={styles.deleteButton}>🗑️ Delete</Text>
+            <Text style={styles.deleteButton}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -91,14 +75,19 @@ export default function BudgetCard({ budget, onDelete, onEdit }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.primary + '08',
+    backgroundColor: Colors.light.card,
     borderWidth: 1,
-    borderColor: Colors.secondary + '30',
+    borderColor: Colors.light.border,
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   typeBg: {
     position: 'absolute',
@@ -116,31 +105,23 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     marginRight: 12,
-  },
-  typeIcon: {
-    fontSize: 20,
-    marginRight: 10,
-    marginTop: 2,
   },
   titleContainer: {
     flex: 1,
   },
   title: {
-    color: Colors.accent,
-    fontSize: 15,
+    color: Colors.light.foreground,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.3,
     marginBottom: 4,
   },
   category: {
-    color: Colors.secondary,
-    fontSize: 11,
+    color: Colors.light.mutedForeground,
+    fontSize: 12,
     fontWeight: '500',
     textTransform: 'capitalize',
-    opacity: 0.8,
   },
   amount: {
     fontSize: 18,
@@ -148,11 +129,10 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   note: {
-    color: Colors.secondary,
-    fontSize: 12,
+    color: Colors.light.mutedForeground,
+    fontSize: 13,
     marginBottom: 10,
     fontStyle: 'italic',
-    opacity: 0.7,
   },
   footer: {
     flexDirection: 'row',
@@ -160,42 +140,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: Colors.secondary + '20',
+    borderTopColor: Colors.light.border,
   },
   footerLeft: {
     flex: 1,
   },
   date: {
-    color: Colors.secondary,
-    fontSize: 11,
+    color: Colors.light.mutedForeground,
+    fontSize: 12,
     marginBottom: 6,
-    opacity: 0.8,
+    fontWeight: '500',
   },
   typeLabel: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
-    opacity: 0.8,
   },
   actions: {
     flexDirection: 'row',
     gap: 8,
   },
   actionButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: Colors.primary + '15',
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: Colors.light.muted,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.primary + '40',
+    borderColor: Colors.light.border,
   },
   editButton: {
-    color: Colors.primary,
+    color: Colors.light.primary,
     fontSize: 11,
     fontWeight: '600',
   },
   deleteButton: {
-    color: '#ff4444',
+    color: Colors.light.destructive,
     fontSize: 11,
     fontWeight: '600',
   },

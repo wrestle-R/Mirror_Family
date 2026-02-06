@@ -264,19 +264,19 @@ export default function AddTransactionScreen() {
                 onPress={handleTakePhoto}
                 disabled={scanningBill || loading}
               >
-                <Text style={styles.scanButtonText}>📷 Take Photo</Text>
+                <Text style={styles.scanButtonText}>Take Photo</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.scanButton, scanningBill && styles.buttonDisabled]} 
                 onPress={handlePickImage}
                 disabled={scanningBill || loading}
               >
-                <Text style={styles.scanButtonText}>🖼️ Pick Image</Text>
+                <Text style={styles.scanButtonText}>Pick Image</Text>
               </TouchableOpacity>
             </View>
             {scanningBill && (
               <View style={styles.scanningIndicator}>
-                <ActivityIndicator color={Colors.primary} />
+                <ActivityIndicator color={Colors.light.primary} />
                 <Text style={styles.scanningText}>Scanning bill...</Text>
               </View>
             )}
@@ -316,7 +316,7 @@ export default function AddTransactionScreen() {
         <TextInput 
           style={styles.input} 
           placeholder="Enter description" 
-          placeholderTextColor={Colors.secondary} 
+          placeholderTextColor={Colors.light.mutedForeground} 
           value={description} 
           onChangeText={setDescription}
           editable={!loading && !scanningBill}
@@ -327,7 +327,7 @@ export default function AddTransactionScreen() {
         <TextInput 
           style={styles.input} 
           placeholder="Enter amount" 
-          placeholderTextColor={Colors.secondary} 
+          placeholderTextColor={Colors.light.mutedForeground} 
           keyboardType="numeric" 
           value={amount} 
           onChangeText={setAmount}
@@ -358,7 +358,7 @@ export default function AddTransactionScreen() {
         <TextInput 
           style={styles.input} 
           placeholder="Enter merchant name" 
-          placeholderTextColor={Colors.secondary} 
+          placeholderTextColor={Colors.light.mutedForeground} 
           value={merchant} 
           onChangeText={setMerchant}
           editable={!loading && !scanningBill}
@@ -388,7 +388,7 @@ export default function AddTransactionScreen() {
         <TextInput 
           style={[styles.input, styles.textArea]} 
           placeholder="Add notes" 
-          placeholderTextColor={Colors.secondary} 
+          placeholderTextColor={Colors.light.mutedForeground} 
           multiline 
           numberOfLines={3} 
           value={notes} 
@@ -403,7 +403,7 @@ export default function AddTransactionScreen() {
           disabled={loading || scanningBill}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.dark} />
+            <ActivityIndicator color={Colors.light.primaryForeground} />
           ) : (
             <Text style={styles.submitButtonText}>{isEdit ? 'Save Changes' : 'Add Transaction'}</Text>
           )}
@@ -414,36 +414,208 @@ export default function AddTransactionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: Colors.dark },
-  title: { fontSize: 24, fontWeight: 'bold', color: Colors.accent, marginBottom: 20, textAlign: 'center' },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: Colors.accent, marginBottom: 10 },
-  scanSection: { marginBottom: 20, padding: 15, backgroundColor: Colors.primary + '10', borderRadius: 10, borderWidth: 1, borderColor: Colors.secondary + '30' },
-  scanButtons: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  scanButton: { flex: 1, padding: 12, borderRadius: 10, backgroundColor: Colors.secondary, alignItems: 'center' },
-  scanButtonText: { color: Colors.dark, fontWeight: '600', fontSize: 14 },
-  scanningIndicator: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 },
-  scanningText: { color: Colors.primary, fontSize: 14 },
-  previewImage: { width: '100%', height: 150, borderRadius: 10, marginTop: 10, resizeMode: 'cover' },
-  label: { color: Colors.secondary, fontSize: 12, marginBottom: 5, marginLeft: 5, marginTop: 5 },
-  input: { backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1, borderRadius: 10, padding: 12, color: Colors.accent, marginBottom: 15 },
-  textArea: { height: 80, textAlignVertical: 'top' },
-  typeContainer: { flexDirection: 'row', gap: 10, marginBottom: 15 },
-  typeButton: { flex: 1, padding: 12, borderRadius: 10, backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1, alignItems: 'center' },
-  typeButtonActive: { backgroundColor: Colors.secondary, borderColor: Colors.secondary },
-  typeText: { color: Colors.secondary, fontWeight: '600' },
-  typeTextActive: { color: Colors.dark },
-  categoryScroll: { marginBottom: 15 },
-  categoryContainer: { flexDirection: 'row', gap: 8 },
-  categoryButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1 },
-  categoryButtonActive: { backgroundColor: Colors.secondary },
-  categoryText: { color: Colors.secondary, fontSize: 11 },
-  categoryTextActive: { color: Colors.dark, fontWeight: '600' },
-  paymentContainer: { flexDirection: 'row', gap: 8, marginBottom: 15 },
-  paymentButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: Colors.primary + '20', borderColor: Colors.secondary, borderWidth: 1 },
-  paymentButtonActive: { backgroundColor: Colors.primary },
-  paymentText: { color: Colors.secondary, fontSize: 11 },
-  paymentTextActive: { color: Colors.dark, fontWeight: '600' },
-  submitButton: { backgroundColor: Colors.primary, padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  submitButtonText: { color: Colors.dark, fontWeight: 'bold', fontSize: 16 },
-  buttonDisabled: { opacity: 0.6 },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: Colors.light.background,
+  },
+  title: { 
+    fontSize: 28, 
+    fontWeight: '700', 
+    color: Colors.light.foreground, 
+    marginBottom: 24, 
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  sectionTitle: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    color: Colors.light.foreground, 
+    marginBottom: 12,
+  },
+  scanSection: { 
+    marginBottom: 24, 
+    padding: 16, 
+    backgroundColor: Colors.light.card, 
+    borderRadius: 12, 
+    borderWidth: 1, 
+    borderColor: Colors.light.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  scanButtons: { 
+    flexDirection: 'row', 
+    gap: 10, 
+    marginBottom: 10,
+  },
+  scanButton: { 
+    flex: 1, 
+    padding: 14, 
+    borderRadius: 10, 
+    backgroundColor: Colors.light.secondary, 
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  scanButtonText: { 
+    color: Colors.light.secondaryForeground, 
+    fontWeight: '600', 
+    fontSize: 14,
+  },
+  scanningIndicator: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 10, 
+    marginTop: 10,
+  },
+  scanningText: { 
+    color: Colors.light.primary, 
+    fontSize: 14,
+  },
+  previewImage: { 
+    width: '100%', 
+    height: 150, 
+    borderRadius: 10, 
+    marginTop: 10, 
+    resizeMode: 'cover',
+  },
+  label: { 
+    color: Colors.light.mutedForeground, 
+    fontSize: 13, 
+    fontWeight: '600',
+    marginBottom: 8, 
+    marginLeft: 4, 
+    marginTop: 8,
+  },
+  input: { 
+    backgroundColor: Colors.light.card, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1, 
+    borderRadius: 12, 
+    padding: 14, 
+    color: Colors.light.foreground, 
+    marginBottom: 16,
+    fontSize: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  textArea: { 
+    height: 90, 
+    textAlignVertical: 'top',
+  },
+  typeContainer: { 
+    flexDirection: 'row', 
+    gap: 12, 
+    marginBottom: 16,
+  },
+  typeButton: { 
+    flex: 1, 
+    padding: 14, 
+    borderRadius: 12, 
+    backgroundColor: Colors.light.card, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1, 
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  typeButtonActive: { 
+    backgroundColor: Colors.light.primary, 
+    borderColor: Colors.light.primary,
+  },
+  typeText: { 
+    color: Colors.light.foreground, 
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  typeTextActive: { 
+    color: Colors.light.primaryForeground,
+  },
+  categoryScroll: { 
+    marginBottom: 16,
+  },
+  categoryContainer: { 
+    flexDirection: 'row', 
+    gap: 8,
+  },
+  categoryButton: { 
+    paddingHorizontal: 14, 
+    paddingVertical: 10, 
+    borderRadius: 10, 
+    backgroundColor: Colors.light.card, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1,
+  },
+  categoryButtonActive: { 
+    backgroundColor: Colors.light.secondary,
+    borderColor: Colors.light.secondary,
+  },
+  categoryText: { 
+    color: Colors.light.foreground, 
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  categoryTextActive: { 
+    color: Colors.light.secondaryForeground, 
+    fontWeight: '600',
+  },
+  paymentContainer: { 
+    flexDirection: 'row', 
+    gap: 8, 
+    marginBottom: 16,
+  },
+  paymentButton: { 
+    paddingHorizontal: 14, 
+    paddingVertical: 10, 
+    borderRadius: 10, 
+    backgroundColor: Colors.light.card, 
+    borderColor: Colors.light.border, 
+    borderWidth: 1,
+  },
+  paymentButtonActive: { 
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  paymentText: { 
+    color: Colors.light.foreground, 
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  paymentTextActive: { 
+    color: Colors.light.primaryForeground, 
+    fontWeight: '600',
+  },
+  submitButton: { 
+    backgroundColor: Colors.light.primary, 
+    padding: 16, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    marginTop: 16,
+    shadowColor: Colors.light.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  submitButtonText: { 
+    color: Colors.light.primaryForeground, 
+    fontWeight: '700', 
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
+  buttonDisabled: { 
+    opacity: 0.6,
+  },
 });

@@ -38,7 +38,7 @@ export default function TotalBalance({ budgets }) {
       {/* Main Balance */}
       <View style={styles.balanceSection}>
         <Text style={styles.currencySymbol}>₹</Text>
-        <Text style={[styles.amount, { color: isPositive ? Colors.primary : '#ff4444' }]}>
+        <Text style={[styles.amount, { color: isPositive ? Colors.light.primary : Colors.light.destructive }]}>
           {isPositive ? '' : '-'}{formatCurrency(netBalance)}
         </Text>
       </View>
@@ -47,12 +47,12 @@ export default function TotalBalance({ budgets }) {
       <View style={styles.breakdown}>
         <View style={styles.breakdownItem}>
           <Text style={styles.breakdownLabel}>Income</Text>
-          <Text style={styles.breakdownValue}>+₹{formatCurrency(totalIncome)}</Text>
+          <Text style={[styles.breakdownValue, { color: Colors.light.primary }]}>+₹{formatCurrency(totalIncome)}</Text>
         </View>
         <View style={styles.separator} />
         <View style={styles.breakdownItem}>
           <Text style={styles.breakdownLabel}>Expense</Text>
-          <Text style={[styles.breakdownValue, { color: '#ff4444' }]}>-₹{formatCurrency(totalExpense)}</Text>
+          <Text style={[styles.breakdownValue, { color: Colors.light.destructive }]}>-₹{formatCurrency(totalExpense)}</Text>
         </View>
       </View>
     </View>
@@ -61,17 +61,22 @@ export default function TotalBalance({ budgets }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.primary + '15',
-    borderColor: Colors.primary,
-    borderWidth: 2,
-    borderRadius: 15,
+    backgroundColor: Colors.light.card,
+    borderColor: Colors.light.border,
+    borderWidth: 1,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    marginHorizontal: 10,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   label: {
-    color: Colors.accent,
-    fontSize: 14,
+    color: Colors.light.mutedForeground,
+    fontSize: 13,
     fontWeight: '600',
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -80,25 +85,25 @@ const styles = StyleSheet.create({
   balanceSection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   currencySymbol: {
-    color: Colors.primary,
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: Colors.light.primary,
+    fontSize: 32,
+    fontWeight: '700',
     marginRight: 8,
     marginTop: 4,
   },
   amount: {
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -1,
   },
   breakdown: {
     flexDirection: 'row',
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: Colors.secondary + '30',
+    borderTopColor: Colors.light.border,
   },
   breakdownItem: {
     flex: 1,
@@ -106,18 +111,19 @@ const styles = StyleSheet.create({
   },
   separator: {
     width: 1,
-    backgroundColor: Colors.secondary + '30',
+    backgroundColor: Colors.light.border,
   },
   breakdownLabel: {
-    color: Colors.secondary,
+    color: Colors.light.mutedForeground,
     fontSize: 12,
-    marginBottom: 6,
+    marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
+    fontWeight: '600',
   },
   breakdownValue: {
-    color: Colors.accent,
-    fontSize: 16,
-    fontWeight: '600',
+    color: Colors.light.foreground,
+    fontSize: 18,
+    fontWeight: '700',
   },
 });
