@@ -13,40 +13,190 @@ export default function BudgetCard({ budget, onDelete, onEdit }) {
     );
   }
 
+  const isIncome = budget.type === 'income';
+  const typeColor = isIncome ? Colors.primary : '#ff4444';
+  const amountDisplay = isIncome ? '+' : '-';
+  const formattedAmount = (budget.amount || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'income':
+        return '💰';
+      case 'expense':
+        return '💸';
+      case 'transfer':
+        return '💳';
+      case 'investment':
+        return '📈';
+      default:
+        return '📝';
+    }
+  };
+
   return (
     <View style={styles.card}>
+      {/* Type Indicator Bar */}
+      <View style={[styles.typeBg, { backgroundColor: typeColor + '20' }]} />
+
+      {/* Header with Title and Type Icon */}
       <View style={styles.header}>
-        <Text style={styles.title}>{budget.title}</Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity onPress={() => onEdit(budget)}>
-            <Text style={styles.editButton}>Edit</Text>
+        <View style={styles.titleSection}>
+          <Text style={styles.typeIcon}>{getTypeIcon(budget.type)}</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title} numberOfLines={2}>
+              {budget.title || budget.category}
+            </Text>
+            <Text style={styles.category}>
+              {budget.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.amount, { color: typeColor }]}>
+          {amountDisplay}₹{formattedAmount}
+        </Text>
+      </View>
+
+      {/* Note/Merchant */}
+      {budget.note && (
+        <Text style={styles.note} numberOfLines={1}>
+          {budget.note}
+        </Text>
+      )}
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <View style={styles.footerLeft}>
+          <Text style={styles.date}>
+            📅 {new Date(budget.createdAt).toLocaleDateString('en-IN')}
+          </Text>
+          <Text style={[styles.typeLabel, { color: typeColor }]}>
+            {budget.type.toUpperCase()}
+          </Text>
+        </View>
+        <View style={styles.actions}>
+          <TouchableOpacity onPress={() => onEdit(budget)} style={styles.actionButton}>
+            <Text style={styles.editButton}>✏️ Edit</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={confirmDelete}>
-            <Text style={styles.deleteButton}>Delete</Text>
+          <TouchableOpacity onPress={confirmDelete} style={styles.actionButton}>
+            <Text style={styles.deleteButton}>🗑️ Delete</Text>
           </TouchableOpacity>
         </View>
-      </View>
-      <Text style={styles.amount}>{budget.amount}</Text>
-      <Text style={styles.category}>{budget.category}</Text>
-      {budget.note ? <Text style={styles.note}>{budget.note}</Text> : null}
-      <View style={styles.footer}>
-        <Text style={styles.date}>{new Date(budget.createdAt).toLocaleDateString()}</Text>
-        <Text style={styles.type}>{budget.type}</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: Colors.card, borderWidth: 1, borderRadius: 12, padding: 15, marginBottom: 12 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  title: { color: Colors.accent, fontSize: 16, fontWeight: '600' },
-  type: { color: Colors.secondary, fontSize: 12, textTransform: 'uppercase', fontWeight: '600' },
-  amount: { color: Colors.accent, fontSize: 24, fontWeight: 'bold', marginBottom: 5 },
-  category: { color: Colors.secondary, fontSize: 12, fontStyle: 'italic', marginBottom: 3 },
-  note: { color: Colors.secondary, fontSize: 12, fontStyle: 'italic', marginBottom: 8 },
-  footer: { color: Colors.accent, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  date: { color: Colors.secondary, fontSize: 11 },
-  editButton: { color: Colors.primary, fontSize: 12, fontWeight: '600', marginRight: 10 },
-  deleteButton: { color: Colors.red, fontSize: 12, fontWeight: '600' },
+  card: {
+    backgroundColor: Colors.primary + '08',
+    borderWidth: 1,
+    borderColor: Colors.secondary + '30',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  typeBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    paddingTop: 4,
+  },
+  titleSection: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginRight: 12,
+  },
+  typeIcon: {
+    fontSize: 20,
+    marginRight: 10,
+    marginTop: 2,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  title: {
+    color: Colors.accent,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  category: {
+    color: Colors.secondary,
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+    opacity: 0.8,
+  },
+  amount: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
+  note: {
+    color: Colors.secondary,
+    fontSize: 12,
+    marginBottom: 10,
+    fontStyle: 'italic',
+    opacity: 0.7,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: Colors.secondary + '20',
+  },
+  footerLeft: {
+    flex: 1,
+  },
+  date: {
+    color: Colors.secondary,
+    fontSize: 11,
+    marginBottom: 6,
+    opacity: 0.8,
+  },
+  typeLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    opacity: 0.8,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary + '15',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.primary + '40',
+  },
+  editButton: {
+    color: Colors.primary,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    color: '#ff4444',
+    fontSize: 11,
+    fontWeight: '600',
+  },
 });

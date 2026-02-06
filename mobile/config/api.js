@@ -54,7 +54,17 @@ export const API_ENDPOINTS = {
     GET_STUDENT: (firebaseUid) => `/api/auth/student/${firebaseUid}`,
     UPDATE_ONBOARDING: (firebaseUid) => `/api/auth/student/${firebaseUid}/onboarding`,
   },
-  // Add other endpoints as needed
+  // Transaction endpoints
+  TRANSACTIONS: {
+    CREATE: '/api/transactions',
+    GET_ALL: (firebaseUid) => `/api/transactions/${firebaseUid}`,
+    GET_ONE: (transactionId) => `/api/transactions/single/${transactionId}`,
+    UPDATE: (transactionId) => `/api/transactions/${transactionId}`,
+    DELETE: (transactionId) => `/api/transactions/${transactionId}`,
+    STATS: (firebaseUid) => `/api/transactions/stats/${firebaseUid}`,
+    MONTHLY: (firebaseUid) => `/api/transactions/monthly/${firebaseUid}`,
+    IMPORT_BILLS: '/api/transactions/import-bills',
+  },
 };
 
 export default api;
