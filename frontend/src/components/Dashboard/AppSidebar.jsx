@@ -1,4 +1,4 @@
-import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2, ChevronDown, EyeOff, Eye } from "lucide-react"
+import { LogOut, User, Moon, Sun, LayoutDashboard, GraduationCap, Receipt, Target, Wallet, PiggyBank, TrendingDown, TrendingUp, Users, CandlestickChart, Activity, Clock, Tv2, ChevronDown, EyeOff, Eye, MessageCircle } from "lucide-react"
 import { useUser } from "../../context/UserContext"
 import { useTheme } from "../../context/ThemeContext"
 import { useStealth } from "../../context/StealthContext"
@@ -70,7 +70,12 @@ const itemGroups = {
         title: "Split",
         url: "/groups",
         icon: Users,
-      }
+      }, 
+      {
+        title: "WhatsApp",
+        url: "/whatsapp",
+        icon: MessageCircle,
+      },
     ]
   },
   investments: {
