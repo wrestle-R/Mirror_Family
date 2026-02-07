@@ -52,10 +52,10 @@ const Hero = () => {
         {/* Hero section */}
         <div className="container mx-auto mt-6 px-4 text-center">
           <h1
-            className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
+            className="mx-auto max-w-5xl text-3xl sm:text-5xl md:text-6xl lg:text-6xl font-bold text-foreground">
             Master Your Finances with MoneyCouncil
           </h1>
-          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg md:text-xl text-muted-foreground">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg md:text-xl dark:text-foreground text-zinc-700">
             A secure, student-focused platform to track expenses, save efficiently, and learn financial skills for life.
           </p>
           <div

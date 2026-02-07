@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import '@fontsource-variable/plus-jakarta-sans';
 
 /* React DatePicker Theme */
 .react-datepicker-wrapper {
@@ -294,6 +295,12 @@
 }
 button {
   cursor: pointer;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans Variable', sans-serif;
+  letter-spacing: var(--tracking-wide); 
+  line-height: 1.5; 
 }
 
 @media (min-width: 768px) {
