@@ -361,7 +361,7 @@ function GoalAnalysisSection({ goal }) {
   }
 
   return (
-    <div className="w-full flex flex-col p-5 bg-gradient-to-br from-card via-card to-primary/5 rounded-xl border border-primary/20 shadow-sm mt-6">
+    <div className="w-full flex flex-col p-5 bg-linear-to-br from-card via-card to-primary/5 rounded-xl border border-primary/20 shadow-sm mt-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 border-b border-primary/10 pb-2">
         <h3 className="text-sm font-bold flex items-center gap-2 text-foreground tracking-tight">
@@ -379,11 +379,11 @@ function GoalAnalysisSection({ goal }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
         {/* Box 1: Circular Progress (Enhanced & Larger) */}
-        <div className="col-span-2 rounded-xl border border-primary/10 bg-gradient-to-br from-background to-secondary/5 p-4 flex items-center justify-around relative overflow-hidden group min-h-[140px]">
+        <div className="col-span-2 rounded-xl border border-primary/10 bg-linear-to-br from-background to-secondary/5 p-4 flex items-center justify-around relative overflow-hidden group min-h-[140px]">
           <div className="absolute top-2 left-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest z-10">Target Progress</div>
 
           <div className="relative size-24 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
-            <svg viewBox="0 0 36 36" className="w-full h-full rotate-[-90deg]">
+            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
               <path className="text-muted/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
               <path className={cn("transition-all duration-1000 ease-out", status.textClass)} strokeDasharray={`${progressPercent}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
@@ -400,7 +400,7 @@ function GoalAnalysisSection({ goal }) {
         </div>
 
         {/* Box 3: Streak */}
-        <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-background to-orange-500/5 p-3 flex flex-col items-center justify-center min-h-[140px]">
+        <div className="rounded-xl border border-primary/10 bg-linear-to-br from-background to-orange-500/5 p-3 flex flex-col items-center justify-center min-h-[140px]">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 w-full text-center">Consistency</p>
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="flex items-baseline gap-1">
@@ -415,7 +415,7 @@ function GoalAnalysisSection({ goal }) {
         </div>
 
         {/* Box 4: Milestones */}
-        <div className="rounded-xl border border-primary/10 bg-gradient-to-br from-background to-primary/5 p-3 flex flex-col min-h-[140px]">
+        <div className="rounded-xl border border-primary/10 bg-linear-to-br from-background to-primary/5 p-3 flex flex-col min-h-[140px]">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 w-full text-center">Milestones</div>
           <div className="flex-1 flex items-center justify-center gap-3">
             <div className="flex flex-col items-center gap-1">

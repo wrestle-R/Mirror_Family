@@ -94,12 +94,12 @@ const GoalNode = ({ data }) => {
     }
 
     return (
-        <div className={`p-4 rounded-full shadow-lg border-2 bg-gradient-to-b from-card to-secondary/30 w-40 h-40 flex flex-col items-center justify-center text-center transition-all duration-500 ${data.achieved ? 'border-green-500 ring-4 ring-green-500/10' : 'border-destructive/60 opacity-90'}`}>
+        <div className={`p-4 rounded-full shadow-lg border-2 bg-linear-to-b from-card to-secondary/30 w-40 h-40 flex flex-col items-center justify-center text-center transition-all duration-500 ${data.achieved ? 'border-green-500 ring-4 ring-green-500/10' : 'border-destructive/60 opacity-90'}`}>
             <Handle type="target" position={Position.Top} className="w-2 h-2 bg-background border border-border" />
             <div className={`p-2 rounded-full mb-2 ${data.achieved ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'}`}>
                 <Target className="w-5 h-5" />
             </div>
-            <div className="font-bold text-sm px-2 break-words max-w-full leading-tight mb-1">{data.label}</div>
+            <div className="font-bold text-sm px-2 wrap-break-word max-w-full leading-tight mb-1">{data.label}</div>
             <div className="text-[10px] text-muted-foreground font-mono">Target: <Money>₹{data.target.toLocaleString()}</Money></div>
             <Badge variant={data.achieved ? "default" : "destructive"} className="mt-2 text-[10px] h-5 px-2 pointer-events-none">
                 {data.achieved ? "Achievable" : "Shortfall"}
@@ -523,7 +523,7 @@ export default function InvestmentAgent() {
                                             <ul className="space-y-3">
                                                 {aiData.tips?.map((tip, i) => (
                                                     <li key={i} className="flex gap-4 text-sm group">
-                                                        <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-110">
+                                                        <span className="shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold transition-transform group-hover:scale-110">
                                                             {i + 1}
                                                         </span>
                                                         <span className="text-muted-foreground group-hover:text-foreground transition-colors">{tip}</span>
@@ -542,7 +542,7 @@ export default function InvestmentAgent() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                                 {aiData.recommendations.map((rec, idx) => (
                                                     <div key={idx} className="group relative bg-card hover:bg-card/80 border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                                                        <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                                                        <div className="h-1 w-full bg-linear-to-r from-blue-500 to-purple-500" />
                                                         <div className="p-5 space-y-4">
                                                             {/* Header */}
                                                             <div>

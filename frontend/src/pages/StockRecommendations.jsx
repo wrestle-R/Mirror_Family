@@ -606,7 +606,7 @@ export default function StockRecommendations() {
           <Card className="border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/20">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" />
                 <div className="text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground mb-1">Investment Disclaimer</p>
                   <p>
@@ -1098,7 +1098,7 @@ export default function StockRecommendations() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {marketInsights.opportunities.map((opportunity, i) => (
                   <div key={i} className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
-                    <Target className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <Target className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                     <p className="text-sm">{opportunity}</p>
                   </div>
                 ))}

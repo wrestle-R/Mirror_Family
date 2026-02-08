@@ -508,7 +508,7 @@ export function CopilotSidebar({ open = true, onOpenChange }) {
       </div>
       
       {/* Input Area - Fixed at bottom */}
-      <div className="border-t flex-shrink-0 bg-background">
+      <div className="border-t shrink-0 bg-background">
         <div className="p-3 space-y-2">
           <div className="flex gap-2 items-end">
             {/* Mode Selector Popover */}

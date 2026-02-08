@@ -27,7 +27,7 @@ export default function GoalProgressTimeline({
     }
 
     return (
-        <Card className="border-l-4 border-l-primary shadow-sm bg-gradient-to-r from-card to-muted/10">
+        <Card className="border-l-4 border-l-primary shadow-sm bg-linear-to-r from-card to-muted/10">
             <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -68,7 +68,7 @@ export default function GoalProgressTimeline({
 
                     {/* Active Progress Fill */}
                     <motion.div
-                        className="absolute left-0 h-3 bg-gradient-to-r from-primary/80 to-primary rounded-full z-10 shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                        className="absolute left-0 h-3 bg-linear-to-r from-primary/80 to-primary rounded-full z-10 shadow-[0_0_15px_rgba(var(--primary),0.5)]"
                         initial={{ width: "0%" }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}

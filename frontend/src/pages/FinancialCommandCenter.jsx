@@ -414,7 +414,7 @@ const SimulationLabSection = ({ originalProfile }) => {
             </div>
 
             {/* Dynamic Narrative */}
-            <div className="bg-gradient-to-r from-primary/5 to-transparent p-4 rounded-xl border border-dashed border-primary/20">
+            <div className="bg-linear-to-r from-primary/5 to-transparent p-4 rounded-xl border border-dashed border-primary/20">
                 <ScenarioNarrative
                     changes={changedFields}
                     originalProfile={normalizedOriginal}
