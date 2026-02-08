@@ -3,7 +3,6 @@
 # Team Mirror Family — Money Council
 
 [![Money Council](https://img.shields.io/badge/Money%20Council-Fintech%20Platform-2ecc71?style=for-the-badge&logo=github&logoColor=white)](https://github.com/wrestle-R/MoneyCouncil)
-[![HackQuinox-2.0](https://img.shields.io/badge/HackQuinox-2.0-3498db?style=for-the-badge&logo=trophy)](https://github.com/wrestle-R/MoneyCouncil)
 [![Team Mirror Family](https://img.shields.io/badge/Team-Mirror%20Family-e74c3c?style=for-the-badge&logo=team)](https://github.com/wrestle-R/MoneyCouncil)
 
 </div>
@@ -25,7 +24,7 @@
 
 ## Overview
 
-Money Council is a fintech-focused web platform designed to make high-quality financial guidance accessible, personalized, and affordable for college students and young professionals. Built by Team Mirror Family for HackQuinox 2.0 at FR. C. Rodrigues Institute of Technology (FCRIT), Navi Mumbai.
+Money Council is a fintech-focused web platform designed to make high-quality financial guidance accessible, personalized, and affordable for college students and young professionals. 
 
 The platform helps users build a detailed financial profile and provides multi-agent AI-powered guidance across budgeting, savings, debt management, and investments—all synthesized into a single, actionable monthly plan. With scenario comparisons, visual dashboards, and transparent insights, Money Council empowers users to build financial confidence and move toward long-term stability.
 
@@ -167,18 +166,19 @@ For questions or issues, open an issue in this repository or contact the team.
 
 ## 👥 Team Mirror Family
 
-**Built with ❤️ by Team Mirror Family for HackQuinox 2.0**
+**Built with ❤️ by Team Mirror Family**
 
 **Team Members:**
 - **Russel Daniel Paul** - [GitHub](https://github.com/wrestle-R)
-
-**Hackathon:** HackQuinox 2.0 — FR. C. Rodrigues Institute of Technology (FCRIT), Navi Mumbai
+- **Romeiro Fernandes** - [GitHub](https://github.com/romeirofernandes)
+- **Aliqyaan Mahimwala** - [GitHub](https://github.com/Hike-12)
+- **Gavin Soares** - [GitHub](https://github.com/gavin100305) 
 
 <div align="center">
 
 ---
 
-[![GitHub Stars](https://img.shields.io/github/stars/wrestle-R/MoneyCouncil?style=social&cacheSeconds=60)](https://github.com/wrestle-R/MoneyCouncil/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/wrestle-R/MoneyCouncil?style=social)](https://github.com/wrestle-R/MoneyCouncil/network/members)
+[![GitHub Stars](https://img.shields.io/github/stars/wrestle-R/Mirror_Family?style=social&cacheSeconds=60)](https://github.com/wrestle-R/Mirror_Family/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/wrestle-R/Mirror_Family?style=social)](https://github.com/wrestle-R/Mirror_Family/network/members)
 
 </div>
